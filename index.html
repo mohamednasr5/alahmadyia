@@ -8,80 +8,37 @@
     <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@700&family=Cairo:wght@900&display=swap" rel="stylesheet">
     
     <style>
-        :root { 
-            --main-color: #c0392b; 
-            --bg-color: #000;
-            --ticker-duration: 25s; /* القيمة الافتراضية للسرعة */
-        }
+        :root { --main-color: #c0392b; --bg-color: #000; --ticker-duration: 25s; }
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; background-color: var(--bg-color); font-family: 'Cairo', sans-serif; overflow: hidden; }
         #tv-container { position: relative; width: 100vw; height: 100vh; background: #000; overflow: hidden; }
 
-        /* ============================
-           1. اللوجو الاحترافي المتحرك
-           ============================ */
-        .pro-logo-container {
-            position: absolute; top: 30px; right: 30px; z-index: 200;
-            text-align: center; pointer-events: none;
-            filter: drop-shadow(0 5px 15px rgba(0,0,0,0.8));
-            animation: floatLogo 4s ease-in-out infinite;
-        }
-        .logo-top {
-            display: block; font-family: 'Amiri', serif; font-size: 1.2rem; color: #fff;
-            text-shadow: 0 0 5px rgba(255,255,255,0.5);
-        }
-        .logo-bottom {
-            display: block; font-size: 2.8rem; font-weight: 900; line-height: 1;
-            /* تأثير الذهب */
-            background: linear-gradient(45deg, #bf953f, #fcf6ba, #b38728, #fbf5b7, #aa771c);
-            -webkit-background-clip: text; color: transparent;
-            /* تأثير اللمعان */
-            background-size: 200% auto;
-            animation: shine 3s linear infinite;
-        }
+        /* اللوجو */
+        .pro-logo-container { position: absolute; top: 30px; right: 30px; z-index: 200; text-align: center; pointer-events: none; filter: drop-shadow(0 5px 15px rgba(0,0,0,0.8)); animation: floatLogo 4s ease-in-out infinite; }
+        .logo-top { display: block; font-family: 'Amiri', serif; font-size: 1.2rem; color: #fff; text-shadow: 0 0 5px rgba(255,255,255,0.5); }
+        .logo-bottom { display: block; font-size: 2.8rem; font-weight: 900; line-height: 1; background: linear-gradient(45deg, #bf953f, #fcf6ba, #b38728, #fbf5b7, #aa771c); -webkit-background-clip: text; color: transparent; background-size: 200% auto; animation: shine 3s linear infinite; }
 
-        /* ============================
-           2. نافذة "برعاية" (Sponsor)
-           ============================ */
-        .sponsor-box {
-            position: absolute; top: 30px; left: 30px; z-index: 200;
-            background: rgba(255, 255, 255, 0.9);
-            padding: 5px 10px; border-radius: 8px;
-            box-shadow: 0 0 20px rgba(0,0,0,0.5);
-            display: none; /* مخفي افتراضياً */
-            animation: slideIn 1s ease-out;
-            text-align: center;
-        }
-        .sponsor-box span { display: block; font-size: 0.8rem; color: #333; margin-bottom: 2px; font-weight: bold; }
+        /* الراعي */
+        .sponsor-box { position: absolute; top: 30px; left: 30px; z-index: 200; background: rgba(255, 255, 255, 0.9); padding: 5px 10px; border-radius: 8px; box-shadow: 0 0 20px rgba(0,0,0,0.5); display: none; text-align: center; }
         .sponsor-box img { max-height: 60px; max-width: 150px; display: block; }
 
-        /* ============================
-           3. بقية العناصر
-           ============================ */
+        /* المشغلات */
         .player-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none; }
         #youtube-player, iframe { width: 100% !important; height: 100% !important; border: none; display: block; }
         video { width: 100%; height: 100%; object-fit: contain; background: #000; }
         #interaction-blocker { position: absolute; top: 0; left: 0; width: 100%; height: 85%; z-index: 50; background: transparent; }
         
-        /* الشريط الإخباري المتطور */
+        /* الشريط */
         .ticker-wrap { position: absolute; bottom: 0; left: 0; width: 100%; height: 50px; background: rgba(192, 57, 43, 0.95); z-index: 100; border-top: 3px solid #f1c40f; overflow: hidden; display: flex; align-items: center; }
-        .ticker-content { 
-            white-space: nowrap; padding-left: 100%; 
-            /* نستخدم المتغير للتحكم بالسرعة */
-            animation: ticker var(--ticker-duration) linear infinite; 
-            color: white; font-size: 1.4rem; font-weight: bold; 
-            text-shadow: 1px 1px 2px black;
-        }
+        .ticker-content { white-space: nowrap; padding-left: 100%; animation: ticker var(--ticker-duration) linear infinite; color: white; font-size: 1.4rem; font-weight: bold; text-shadow: 1px 1px 2px black; }
 
         /* شاشة البدء */
         #start-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; color: white; cursor: pointer; }
         .play-btn { font-size: 50px; border: 2px solid white; border-radius: 50%; width: 80px; height: 80px; display: flex; justify-content: center; align-items: center; transition: 0.3s; margin-bottom: 20px; }
         #start-overlay:hover .play-btn { background: var(--main-color); border-color: var(--main-color); }
 
-        /* الأنيميشن */
         @keyframes ticker { 0% {transform: translate3d(0,0,0);} 100% {transform: translate3d(100%,0,0);} }
         @keyframes shine { to { background-position: 200% center; } }
         @keyframes floatLogo { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
-        @keyframes slideIn { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
     </style>
 </head>
 <body>
@@ -96,23 +53,14 @@
     </div>
 
     <div id="tv-container">
-        <div class="pro-logo-container">
-            <span class="logo-top">قناة</span>
-            <span class="logo-bottom">الأحمدية</span>
-        </div>
-
-        <div id="sponsor-container" class="sponsor-box">
-            <span>برعاية</span>
-            <img id="sponsor-img" src="" alt="Sponsor">
-        </div>
-
+        <div class="pro-logo-container"><span class="logo-top">قناة</span><span class="logo-bottom">الأحمدية</span></div>
+        <div id="sponsor-container" class="sponsor-box"><span>برعاية</span><img id="sponsor-img" src="" alt="Sponsor"></div>
         <div id="interaction-blocker"></div>
+        
         <div id="youtube-player" class="player-layer"></div>
         <video id="native-player" class="player-layer" playsinline></video>
         
-        <div class="ticker-wrap">
-            <div class="ticker-content" id="ticker-text">جارٍ الاتصال بالقناة...</div>
-        </div>
+        <div class="ticker-wrap"><div class="ticker-content" id="ticker-text">جارٍ الاتصال...</div></div>
     </div>
 
     <script type="module">
@@ -135,60 +83,113 @@
 
         let ytPlayer;
         let isStarted = false;
-        let currentBroadcast = null;
-        
+        let currentData = null;
+        let checkInterval = null;
+        let lastPlayedId = null; // لمنع إعادة تحميل نفس الفيديو
+
         const nativePlayer = document.getElementById('native-player');
         const ytContainer = document.getElementById('youtube-player');
         const tickerEl = document.getElementById('ticker-text');
-        const sponsorBox = document.getElementById('sponsor-container');
-        const sponsorImg = document.getElementById('sponsor-img');
         const overlay = document.getElementById('start-overlay');
-        const root = document.documentElement; // للتحكم في CSS variables
+        const root = document.documentElement;
 
         overlay.addEventListener('click', () => {
             overlay.style.display = 'none';
             isStarted = true;
-            if(currentBroadcast) syncAndPlay(currentBroadcast);
+            if(currentData) startScheduler(currentData);
         });
 
-        // الاستماع للتحديثات
-        const broadcastRef = ref(db, 'channel_status');
-        onValue(broadcastRef, (snapshot) => {
+        // الاستماع لقاعدة البيانات
+        onValue(ref(db, 'channel_status'), (snapshot) => {
             const data = snapshot.val();
             if (data) {
-                // 1. تحديث الشريط والسرعة
+                // تحديث العناصر الجانبية
                 if(data.tickerText) tickerEl.innerText = data.tickerText;
-                if(data.tickerSpeed) {
-                    // تحديث سرعة الأنيميشن في CSS
-                    root.style.setProperty('--ticker-duration', data.tickerSpeed + 's');
-                }
-
-                // 2. تحديث الرعاية (Sponsor)
-                if(data.sponsor && data.sponsor.show && data.sponsor.url) {
+                if(data.tickerSpeed) root.style.setProperty('--ticker-duration', data.tickerSpeed + 's');
+                
+                const sponsorBox = document.getElementById('sponsor-container');
+                if(data.sponsor && data.sponsor.show) {
                     sponsorBox.style.display = 'block';
-                    sponsorImg.src = data.sponsor.url;
+                    document.getElementById('sponsor-img').src = data.sponsor.url;
                 } else {
                     sponsorBox.style.display = 'none';
                 }
-                
-                // 3. الفيديو
-                currentBroadcast = data;
-                if(isStarted) {
-                    syncAndPlay(data);
-                }
+
+                currentData = data;
+                if(isStarted) startScheduler(data);
             }
         });
 
-        function syncAndPlay(data) {
-            hideAll();
-            const now = Date.now();
-            const startTime = data.startTime || now;
-            const elapsedSeconds = (now - startTime) / 1000;
+        // --- المايسترو (Scheduler) ---
+        // هذه الدالة تعمل كل ثانية لحساب "ماذا يجب أن نعرض الآن؟"
+        function startScheduler(data) {
+            if(checkInterval) clearInterval(checkInterval);
+            
+            // تشغيل مرة واحدة فوراً
+            calculateAndPlay(data);
 
-            if (data.type === 'youtube') {
-                playYouTube(data.url, elapsedSeconds);
-            } else if (data.type === 'direct') {
-                playDirect(data.url, elapsedSeconds);
+            // ثم التحقق كل ثانية للتنقل التلقائي
+            checkInterval = setInterval(() => {
+                calculateAndPlay(data);
+            }, 1000);
+        }
+
+        function calculateAndPlay(data) {
+            if(!data.playlist || !data.playlistStartTime) return;
+
+            const now = Date.now();
+            const timeElapsedTotal = (now - data.playlistStartTime) / 1000; // الثواني المنقضية منذ بدء القائمة
+
+            // 1. حساب مدة القائمة كاملة
+            let totalDuration = 0;
+            data.playlist.forEach(item => totalDuration += parseInt(item.duration));
+            
+            // 2. تحديد موقعنا في التكرار (Loop)
+            // المودولو (%) يجعل القائمة تعيد نفسها تلقائياً
+            let currentLoopTime = timeElapsedTotal % totalDuration;
+
+            // 3. البحث عن الفيديو الحالي
+            let timeCursor = 0;
+            let foundVideo = null;
+            let seekTime = 0;
+
+            for (let item of data.playlist) {
+                const itemDuration = parseInt(item.duration);
+                // هل الوقت الحالي يقع داخل هذا الفيديو؟
+                if (currentLoopTime >= timeCursor && currentLoopTime < (timeCursor + itemDuration)) {
+                    foundVideo = item;
+                    seekTime = currentLoopTime - timeCursor; // كم ثانية مضت من هذا الفيديو
+                    break;
+                }
+                timeCursor += itemDuration;
+            }
+
+            if (foundVideo) {
+                playSyncedVideo(foundVideo, seekTime);
+            }
+        }
+
+        function playSyncedVideo(video, seekTime) {
+            // إذا كان الفيديو هو نفسه الذي يعمل حالياً، فقط نتأكد من التزامن
+            if (lastPlayedId === video.id || lastPlayedId === video.url) {
+                // تصحيح الوقت إذا انحرف (لليوتيوب والفيديو العادي)
+                if (video.type === 'direct' && Math.abs(nativePlayer.currentTime - seekTime) > 5) {
+                    console.log("Resyncing Direct Video...");
+                    nativePlayer.currentTime = seekTime;
+                }
+                // تصحيح يوتيوب صعب قليلاً لانه قد يعيد التحميل، لذا نتركه لليوتيوب إلا إذا كان الفرق كبيراً جداً
+                return; 
+            }
+
+            // فيديو جديد!
+            console.log("Switching to:", video.title, "at", seekTime);
+            lastPlayedId = video.id || video.url;
+            hideAll();
+
+            if (video.type === 'youtube') {
+                playYouTube(video.id, seekTime);
+            } else if (video.type === 'direct') {
+                playDirect(video.url, seekTime);
             }
         }
 
@@ -199,53 +200,37 @@
             nativePlayer.pause();
         }
 
+        // --- المشغلات ---
         window.onYouTubeIframeAPIReady = function() {
             ytPlayer = new YT.Player('youtube-player', {
                 height: '100%', width: '100%',
                 playerVars: { 'playsinline': 1, 'controls': 0, 'rel': 0, 'autoplay': 1 },
-                events: { 
-                    'onReady': () => {
-                        if(isStarted && currentBroadcast && currentBroadcast.type === 'youtube') {
-                            syncAndPlay(currentBroadcast);
-                        }
-                    }
-                }
+                events: { 'onReady': () => { if(isStarted && currentData) startScheduler(currentData); } }
             });
         };
 
-        function playYouTube(videoId, seekToSec) {
+        function playYouTube(id, startSeconds) {
             ytContainer.style.display = 'block';
             if (ytPlayer && ytPlayer.loadVideoById) {
-                ytPlayer.loadVideoById(videoId, seekToSec);
+                ytPlayer.loadVideoById({videoId: id, startSeconds: startSeconds});
                 ytPlayer.playVideo();
             }
         }
 
-        function playDirect(url, seekToSec) {
+        function playDirect(url, startSeconds) {
             nativePlayer.style.display = 'block';
             if (Hls.isSupported() && url.includes('.m3u8')) {
-                const hls = new Hls();
-                hls.loadSource(url);
-                hls.attachMedia(nativePlayer);
+                const hls = new Hls(); hls.loadSource(url); hls.attachMedia(nativePlayer);
                 hls.on(Hls.Events.MANIFEST_PARSED, () => nativePlayer.play());
             } else {
                 nativePlayer.src = url;
-                nativePlayer.currentTime = seekToSec;
+                nativePlayer.currentTime = startSeconds;
                 nativePlayer.play();
-                nativePlayer.ontimeupdate = () => {
-                    const freshNow = Date.now();
-                    const freshElapsed = (freshNow - currentBroadcast.startTime) / 1000;
-                    if (Math.abs(nativePlayer.currentTime - freshElapsed) > 10) {
-                        nativePlayer.currentTime = freshElapsed;
-                    }
-                };
             }
         }
 
-        var tag = document.createElement('script');
-        tag.src = "https://www.youtube.com/iframe_api";
-        var firstScriptTag = document.getElementsByTagName('script')[0];
-        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+        var tag = document.createElement('script'); tag.src = "https://www.youtube.com/iframe_api";
+        var firstScriptTag = document.getElementsByTagName('script')[0]; firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
     </script>
 </body>
 </html>
