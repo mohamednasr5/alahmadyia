@@ -2,187 +2,1233 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>مدير القوائم | قناة الأحمدية</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة التحكم | قناة الأحمدية</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
-        body { background: #f0f2f5; font-family: 'Segoe UI', sans-serif; padding: 20px; }
-        .card { border: none; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-        .playlist-item { background: #fff; padding: 10px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
-        .playlist-item:last-child { border-bottom: none; }
-        .duration-badge { background: #e74c3c; color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.8rem; }
+        :root {
+            --primary: #c0392b;
+            --primary-dark: #962d22;
+            --secondary: #f39c12;
+            --success: #27ae60;
+            --danger: #e74c3c;
+            --dark: #1a1a2e;
+            --darker: #0a0a0a;
+            --gray: #ecf0f1;
+            --text: #2c3e50;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: linear-gradient(135deg, var(--darker) 0%, var(--dark) 100%);
+            min-height: 100vh;
+            color: white;
+        }
+
+        /* شاشة تسجيل الدخول */
+        #login-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, var(--darker) 0%, var(--dark) 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+        }
+        
+        .login-box {
+            background: rgba(255,255,255,0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+        }
+        
+        .login-box h1 {
+            margin-bottom: 30px;
+            font-size: 1.8rem;
+        }
+        
+        .login-box input {
+            width: 100%;
+            padding: 15px 20px;
+            border: none;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.1);
+            color: white;
+            font-size: 1.1rem;
+            text-align: center;
+            margin-bottom: 20px;
+            font-family: 'Cairo', sans-serif;
+        }
+        
+        .login-box input::placeholder {
+            color: rgba(255,255,255,0.5);
+        }
+        
+        .login-box button {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            background: var(--primary);
+            color: white;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Cairo', sans-serif;
+        }
+        
+        .login-box button:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+        
+        .login-error {
+            color: var(--danger);
+            margin-top: 15px;
+            display: none;
+        }
+
+        /* الهيدر */
+        .header {
+            background: rgba(0,0,0,0.3);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .header h1 {
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .header-actions {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+        
+        .viewers-badge {
+            background: var(--success);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .viewers-badge i {
+            animation: pulse 2s infinite;
+        }
+        
+        .logout-btn {
+            background: transparent;
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .logout-btn:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        /* المحتوى الرئيسي */
+        .main-content {
+            padding: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 20px;
+        }
+        
+        @media (max-width: 1024px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* البطاقات */
+        .card {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .card-header h2 {
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .card-header h2 i {
+            color: var(--secondary);
+        }
+
+        /* الفورم */
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 10px;
+            background: rgba(0,0,0,0.3);
+            color: white;
+            font-size: 0.95rem;
+            font-family: 'Cairo', sans-serif;
+            transition: all 0.3s;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: rgba(0,0,0,0.5);
+        }
+        
+        .form-control::placeholder {
+            color: rgba(255,255,255,0.4);
+        }
+        
+        select.form-control {
+            cursor: pointer;
+        }
+
+        /* الأزرار */
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: 'Cairo', sans-serif;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+        
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #219a52;
+            transform: translateY(-2px);
+        }
+        
+        .btn-warning {
+            background: var(--secondary);
+            color: var(--dark);
+        }
+        
+        .btn-warning:hover {
+            background: #e67e22;
+        }
+        
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+        
+        .btn-sm {
+            padding: 8px 15px;
+            font-size: 0.85rem;
+        }
+        
+        .btn-block {
+            width: 100%;
+            justify-content: center;
+        }
+
+        /* قائمة التشغيل */
+        .playlist-container {
+            max-height: 500px;
+            overflow-y: auto;
+            margin-bottom: 15px;
+        }
+        
+        .playlist-item {
+            background: rgba(0,0,0,0.3);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid rgba(255,255,255,0.05);
+            transition: all 0.3s;
+        }
+        
+        .playlist-item:hover {
+            background: rgba(0,0,0,0.5);
+        }
+        
+        .playlist-item-info h4 {
+            font-size: 0.95rem;
+            margin-bottom: 5px;
+        }
+        
+        .playlist-item-meta {
+            display: flex;
+            gap: 10px;
+            font-size: 0.8rem;
+            opacity: 0.7;
+        }
+        
+        .badge {
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .badge-youtube { background: #ff0000; }
+        .badge-tiktok { background: #000000; border: 1px solid #fff; }
+        .badge-facebook { background: #1877f2; }
+        .badge-direct { background: var(--success); }
+        .badge-audio { background: #9b59b6; }
+        
+        .duration-input {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .duration-input input {
+            flex: 1;
+        }
+        
+        .duration-input span {
+            font-size: 0.85rem;
+            opacity: 0.7;
+        }
+
+        /* ملخص */
+        .summary-bar {
+            background: rgba(0,0,0,0.3);
+            padding: 15px;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .summary-item {
+            text-align: center;
+        }
+        
+        .summary-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--secondary);
+        }
+        
+        .summary-label {
+            font-size: 0.8rem;
+            opacity: 0.7;
+        }
+
+        /* رفع الملفات */
+        .upload-zone {
+            border: 2px dashed rgba(255,255,255,0.3);
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .upload-zone:hover {
+            border-color: var(--primary);
+            background: rgba(192, 57, 43, 0.1);
+        }
+        
+        .upload-zone i {
+            font-size: 3rem;
+            opacity: 0.5;
+            margin-bottom: 15px;
+        }
+        
+        .upload-zone p {
+            opacity: 0.7;
+            font-size: 0.9rem;
+        }
+        
+        #file-input {
+            display: none;
+        }
+
+        /* معاينة الصورة */
+        .preview-container {
+            display: none;
+            margin-top: 15px;
+        }
+        
+        .preview-container img {
+            max-width: 100%;
+            max-height: 150px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+
+        /* الإعلانات */
+        .ad-toggle {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .toggle-switch {
+            position: relative;
+            width: 50px;
+            height: 26px;
+        }
+        
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255,255,255,0.2);
+            border-radius: 26px;
+            transition: 0.3s;
+        }
+        
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 3px;
+            bottom: 3px;
+            background: white;
+            border-radius: 50%;
+            transition: 0.3s;
+        }
+        
+        input:checked + .toggle-slider {
+            background: var(--success);
+        }
+        
+        input:checked + .toggle-slider:before {
+            transform: translateX(24px);
+        }
+
+        /* التابات */
+        .tabs {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 20px;
+            background: rgba(0,0,0,0.3);
+            padding: 5px;
+            border-radius: 10px;
+        }
+        
+        .tab-btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            background: transparent;
+            color: white;
+            font-family: 'Cairo', sans-serif;
+            font-size: 0.9rem;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+        
+        .tab-btn.active {
+            background: var(--primary);
+        }
+        
+        .tab-btn:hover:not(.active) {
+            background: rgba(255,255,255,0.1);
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+
+        /* حالة البث */
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-size: 0.9rem;
+        }
+        
+        .status-live {
+            background: rgba(39, 174, 96, 0.2);
+            border: 1px solid var(--success);
+            color: var(--success);
+        }
+        
+        .status-offline {
+            background: rgba(231, 76, 60, 0.2);
+            border: 1px solid var(--danger);
+            color: var(--danger);
+        }
+        
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+        
+        .status-live .status-dot {
+            background: var(--success);
+            animation: pulse 1.5s infinite;
+        }
+        
+        .status-offline .status-dot {
+            background: var(--danger);
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.2); }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: rgba(0,0,0,0.2);
+            border-radius: 3px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.2);
+            border-radius: 3px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .header-actions {
+                width: 100%;
+                justify-content: space-between;
+            }
+            
+            .main-content {
+                padding: 15px;
+            }
+        }
     </style>
 </head>
 <body>
 
-<div class="container" style="max-width: 900px;">
-    <h2 class="text-center mb-4 text-primary">🎛️ ستوديو القوائم المتزامنة</h2>
-
-    <div class="row">
-        <div class="col-md-5">
-            <div class="card p-3 mb-3">
-                <h5 class="mb-3">1. إضافة فيديو للقائمة</h5>
-                
-                <label>نوع الفيديو:</label>
-                <select id="vid-type" class="form-select mb-2">
-                    <option value="youtube">يوتيوب (ID)</option>
-                    <option value="direct">ملف مباشر (URL)</option>
-                </select>
-
-                <label>الرابط أو المعرف:</label>
-                <input type="text" id="vid-url" class="form-control mb-2" placeholder="مثال: jfKfPfyJRdk">
-
-                <label>العنوان:</label>
-                <input type="text" id="vid-title" class="form-control mb-2" placeholder="عنوان الفيديو">
-
-                <label class="text-danger fw-bold">المدة (بالثواني) - هام جداً:</label>
-                <div class="input-group mb-3">
-                    <input type="number" id="vid-duration" class="form-control" placeholder="مثال: 300 (لـ 5 دقائق)">
-                    <span class="input-group-text">ثانية</span>
-                </div>
-
-                <button onclick="addToQueue()" class="btn btn-primary w-100">➕ إضافة للقائمة</button>
-            </div>
-
-            <div class="card p-3">
-                <h5>إعدادات إضافية</h5>
-                <input type="text" id="ticker-text" class="form-control mb-2" placeholder="نص الشريط الإخباري...">
-                <button onclick="updateSettingsOnly()" class="btn btn-warning w-100 btn-sm">تحديث الشريط فقط</button>
-            </div>
-        </div>
-
-        <div class="col-md-7">
-            <div class="card p-3 h-100">
-                <h5 class="mb-3">2. قائمة التشغيل الحالية (Queue)</h5>
-                
-                <div id="playlist-container" class="border rounded bg-light mb-3" style="min-height: 200px; max-height: 400px; overflow-y: auto;">
-                    <p class="text-center text-muted p-4" id="empty-msg">القائمة فارغة. أضف فيديوهات من اليمين.</p>
-                </div>
-
-                <div class="d-flex justify-content-between align-items-center bg-white p-2 rounded border mb-3">
-                    <strong>المدة الكلية للقائمة:</strong>
-                    <span id="total-duration" class="badge bg-dark">0 ثانية</span>
-                </div>
-
-                <button onclick="publishPlaylist()" class="btn btn-success btn-lg w-100">🚀 بدء تشغيل القائمة المتزامنة للجميع</button>
-                <small class="text-muted text-center d-block mt-2">عند الضغط، سيتم بدء القائمة من البداية عند جميع المشاهدين في نفس اللحظة.</small>
-            </div>
+    <!-- شاشة تسجيل الدخول -->
+    <div id="login-screen">
+        <div class="login-box">
+            <h1><i class="fas fa-lock"></i> لوحة التحكم</h1>
+            <p style="opacity: 0.7; margin-bottom: 25px;">قناة الأحمدية</p>
+            <input type="password" id="password-input" placeholder="أدخل كلمة السر">
+            <button onclick="attemptLogin()">دخول</button>
+            <p class="login-error" id="login-error">كلمة السر غير صحيحة</p>
         </div>
     </div>
-</div>
 
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-    import { getDatabase, ref, set, update } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js";
+    <!-- المحتوى الرئيسي -->
+    <div id="main-app" style="display: none;">
+        <header class="header">
+            <h1><i class="fas fa-broadcast-tower"></i> لوحة تحكم البث</h1>
+            <div class="header-actions">
+                <div class="viewers-badge">
+                    <i class="fas fa-eye"></i>
+                    <span id="viewers-count">0</span> مشاهد
+                </div>
+                <div id="status-indicator" class="status-indicator status-offline">
+                    <span class="status-dot"></span>
+                    <span id="status-text">غير متصل</span>
+                </div>
+                <button class="logout-btn" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i> خروج
+                </button>
+            </div>
+        </header>
 
-    const firebaseConfig = {
-        apiKey: "AIzaSyBxqN1tGzv6bY95FtrbhmUxYucucJ_4veY",
-        authDomain: "ahmdiya-f99f2.firebaseapp.com",
-        databaseURL: "https://ahmdiya-f99f2-default-rtdb.firebaseio.com",
-        projectId: "ahmdiya-f99f2",
-        storageBucket: "ahmdiya-f99f2.firebasestorage.app",
-        messagingSenderId: "831329583457",
-        appId: "1:831329583457:web:acbf686be2c624b4780520",
-        measurementId: "G-73QPC6RXM3"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-
-    // مصفوفة لتخزين القائمة محلياً قبل الإرسال
-    window.playlistQueue = [];
-
-    window.addToQueue = () => {
-        const type = document.getElementById('vid-type').value;
-        const url = document.getElementById('vid-url').value;
-        const title = document.getElementById('vid-title').value;
-        const duration = parseInt(document.getElementById('vid-duration').value);
-
-        if(!url || !duration) return alert("الرابط والمدة مطلوبان!");
-
-        const item = {
-            type: type,
-            id: (type === 'youtube') ? url : null, // لليوتيوب نستخدم المعرف
-            url: (type === 'direct') ? url : null, // للمباشر نستخدم الرابط
-            title: title || "فيديو",
-            duration: duration
-        };
-
-        window.playlistQueue.push(item);
-        renderQueue();
-        
-        // تنظيف الحقول
-        document.getElementById('vid-url').value = '';
-        document.getElementById('vid-title').value = '';
-        document.getElementById('vid-duration').value = '';
-    };
-
-    window.removeFromQueue = (index) => {
-        window.playlistQueue.splice(index, 1);
-        renderQueue();
-    };
-
-    function renderQueue() {
-        const container = document.getElementById('playlist-container');
-        const emptyMsg = document.getElementById('empty-msg');
-        const totalBadge = document.getElementById('total-duration');
-        
-        container.innerHTML = "";
-        let totalSec = 0;
-
-        if(window.playlistQueue.length === 0) {
-            container.appendChild(emptyMsg);
-            totalBadge.innerText = "0 ثانية";
-            return;
-        }
-
-        window.playlistQueue.forEach((item, index) => {
-            totalSec += item.duration;
-            container.innerHTML += `
-                <div class="playlist-item">
-                    <div>
-                        <strong>${index+1}. ${item.title}</strong>
-                        <small class="text-muted d-block">${item.type}</small>
+        <main class="main-content">
+            <div class="grid">
+                <!-- القسم الأيمن - الإضافة -->
+                <div>
+                    <!-- إضافة محتوى -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h2><i class="fas fa-plus-circle"></i> إضافة محتوى</h2>
+                        </div>
+                        
+                        <div class="tabs">
+                            <button class="tab-btn active" onclick="switchTab('video')">فيديو</button>
+                            <button class="tab-btn" onclick="switchTab('image')">صورة + صوت</button>
+                            <button class="tab-btn" onclick="switchTab('upload')">رفع ملف</button>
+                        </div>
+                        
+                        <!-- تب الفيديو -->
+                        <div id="tab-video" class="tab-content active">
+                            <div class="form-group">
+                                <label>المنصة</label>
+                                <select id="vid-platform" class="form-control" onchange="updatePlaceholder()">
+                                    <option value="youtube">YouTube</option>
+                                    <option value="tiktok">TikTok</option>
+                                    <option value="facebook">Facebook</option>
+                                    <option value="direct">رابط مباشر (m3u8/mp4)</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>الرابط أو المعرف</label>
+                                <input type="text" id="vid-url" class="form-control" placeholder="معرف الفيديو أو الرابط كاملاً">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>العنوان</label>
+                                <input type="text" id="vid-title" class="form-control" placeholder="عنوان الفيديو">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>المدة (بالثواني)</label>
+                                <div class="duration-input">
+                                    <input type="number" id="vid-duration" class="form-control" placeholder="180">
+                                    <span>ثانية</span>
+                                </div>
+                                <small style="opacity: 0.6; font-size: 0.8rem;">* المدة مهمة جداً للتزامن</small>
+                            </div>
+                            
+                            <button class="btn btn-primary btn-block" onclick="addVideo()">
+                                <i class="fas fa-plus"></i> إضافة للقائمة
+                            </button>
+                        </div>
+                        
+                        <!-- تب الصورة -->
+                        <div id="tab-image" class="tab-content">
+                            <div class="form-group">
+                                <label>رابط الصورة</label>
+                                <input type="text" id="img-url" class="form-control" placeholder="https://...">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>رابط الملف الصوتي (اختياري)</label>
+                                <input type="text" id="audio-url" class="form-control" placeholder="https://...mp3">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>العنوان</label>
+                                <input type="text" id="img-title" class="form-control" placeholder="عنوان العرض">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>المدة (بالثواني)</label>
+                                <input type="number" id="img-duration" class="form-control" placeholder="60">
+                            </div>
+                            
+                            <button class="btn btn-primary btn-block" onclick="addImageItem()">
+                                <i class="fas fa-plus"></i> إضافة للقائمة
+                            </button>
+                        </div>
+                        
+                        <!-- تب الرفع -->
+                        <div id="tab-upload" class="tab-content">
+                            <div class="upload-zone" onclick="document.getElementById('file-input').click()">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                                <p>اضغط لرفع ملف فيديو أو صوت<br><small>MP4, MP3, WebM</small></p>
+                            </div>
+                            <input type="file" id="file-input" accept="video/*,audio/*" onchange="handleFileSelect(event)">
+                            
+                            <div id="upload-preview" class="preview-container">
+                                <p id="file-name"></p>
+                            </div>
+                            
+                            <div id="upload-form" style="display: none; margin-top: 15px;">
+                                <div class="form-group">
+                                    <label>العنوان</label>
+                                    <input type="text" id="upload-title" class="form-control" placeholder="عنوان الملف">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label>المدة (بالثواني)</label>
+                                    <input type="number" id="upload-duration" class="form-control" placeholder="180">
+                                </div>
+                                
+                                <button class="btn btn-primary btn-block" onclick="addUploadedFile()">
+                                    <i class="fas fa-plus"></i> إضافة للقائمة
+                                </button>
+                            </div>
+                            
+                            <p style="margin-top: 15px; font-size: 0.8rem; opacity: 0.6;">
+                                <i class="fas fa-info-circle"></i>
+                                ملاحظة: لرفع الملفات فعلياً، استخدم خدمة تخزين سحابي ثم انسخ الرابط المباشر
+                            </p>
+                        </div>
                     </div>
-                    <div>
-                        <span class="duration-badge">${item.duration} ث</span>
-                        <button onclick="removeFromQueue(${index})" class="btn btn-sm btn-outline-danger ms-2">x</button>
+                    
+                    <!-- الإعلانات الجانبية -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h2><i class="fas fa-ad"></i> الإعلانات الجانبية</h2>
+                        </div>
+                        
+                        <div class="ad-toggle">
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="ad-right-toggle">
+                                <span class="toggle-slider"></span>
+                            </label>
+                            <span>إعلان يمين</span>
+                        </div>
+                        <div class="form-group">
+                            <input type="text" id="ad-right-url" class="form-control" placeholder="رابط صورة الإعلان الأيمن">
+                        </div>
+                        
+                        <div class="ad-toggle">
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="ad-left-toggle">
+                                <span class="toggle-slider"></span>
+                            </label>
+                            <span>إعلان يسار</span>
+                        </div>
+                        <div class="form-group">
+                            <input type="text" id="ad-left-url" class="form-control" placeholder="رابط صورة الإعلان الأيسر">
+                        </div>
+                        
+                        <button class="btn btn-warning btn-sm" onclick="updateAds()">
+                            <i class="fas fa-save"></i> حفظ الإعلانات
+                        </button>
+                    </div>
+                    
+                    <!-- الراعي -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h2><i class="fas fa-handshake"></i> الراعي</h2>
+                        </div>
+                        
+                        <div class="ad-toggle">
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="sponsor-toggle">
+                                <span class="toggle-slider"></span>
+                            </label>
+                            <span>إظهار الراعي</span>
+                        </div>
+                        <div class="form-group">
+                            <input type="text" id="sponsor-url" class="form-control" placeholder="رابط لوجو الراعي">
+                        </div>
+                        
+                        <button class="btn btn-warning btn-sm" onclick="updateSponsor()">
+                            <i class="fas fa-save"></i> حفظ
+                        </button>
                     </div>
                 </div>
-            `;
-        });
+                
+                <!-- القسم الأيسر - القائمة -->
+                <div>
+                    <div class="card">
+                        <div class="card-header">
+                            <h2><i class="fas fa-list"></i> قائمة التشغيل</h2>
+                            <button class="btn btn-danger btn-sm" onclick="clearPlaylist()">
+                                <i class="fas fa-trash"></i> مسح الكل
+                            </button>
+                        </div>
+                        
+                        <div class="summary-bar">
+                            <div class="summary-item">
+                                <div class="summary-value" id="total-items">0</div>
+                                <div class="summary-label">عناصر</div>
+                            </div>
+                            <div class="summary-item">
+                                <div class="summary-value" id="total-duration">00:00</div>
+                                <div class="summary-label">المدة الكلية</div>
+                            </div>
+                        </div>
+                        
+                        <div class="playlist-container" id="playlist-container">
+                            <p style="text-align: center; opacity: 0.5; padding: 40px;">
+                                <i class="fas fa-inbox" style="font-size: 3rem; margin-bottom: 15px; display: block;"></i>
+                                القائمة فارغة
+                            </p>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>نص الشريط الإخباري</label>
+                            <input type="text" id="ticker-text" class="form-control" placeholder="أهلاً بكم في قناة الأحمدية">
+                        </div>
+                        
+                        <div style="display: flex; gap: 10px;">
+                            <button class="btn btn-success btn-block" onclick="goLive()">
+                                <i class="fas fa-broadcast-tower"></i> بدء البث المباشر
+                            </button>
+                            <button class="btn btn-danger" onclick="stopBroadcast()">
+                                <i class="fas fa-stop-circle"></i> إيقاف
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
 
-        // تحويل الثواني لدقائق للعرض
-        const minutes = Math.floor(totalSec / 60);
-        const seconds = totalSec % 60;
-        totalBadge.innerText = `${minutes} دقيقة و ${seconds} ثانية`;
-    }
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+        import { getDatabase, ref, set, update, remove, onValue, push, onDisconnect } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js";
 
-    // زر الإطلاق الكبير
-    window.publishPlaylist = () => {
-        if(window.playlistQueue.length === 0) return alert("القائمة فارغة!");
+        const firebaseConfig = {
+            apiKey: "AIzaSyBxqN1tGzv6bY95FtrbhmUxYucucJ_4veY",
+            authDomain: "ahmdiya-f99f2.firebaseapp.com",
+            databaseURL: "https://ahmdiya-f99f2-default-rtdb.firebaseio.com",
+            projectId: "ahmdiya-f99f2",
+            storageBucket: "ahmdiya-f99f2.firebasestorage.app",
+            messagingSenderId: "831329583457",
+            appId: "1:831329583457:web:acbf686be2c624b4780520",
+            measurementId: "G-73QPC6RXM3"
+        };
 
-        const ticker = document.getElementById('ticker-text').value;
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        
+        const ADMIN_PASSWORD = '521988';
+        let playlistQueue = [];
+        let uploadedFileUrl = '';
+        let uploadedFileType = '';
 
-        // إرسال البيانات لـ Firebase
-        set(ref(db, 'channel_status'), {
-            playlist: window.playlistQueue,
-            playlistStartTime: Date.now(), // لحظة الصفر التي سيعتمد عليها الجميع
-            tickerText: ticker || "أهلاً بكم في قناة الأحمدية",
-            tickerSpeed: 25,
-            sponsor: { show: false } // إعادة تعيين الراعي
-        }).then(() => {
-            alert("✅ تم إطلاق القائمة! ستبدأ الآن عند جميع المشاهدين.");
-        });
-    };
-
-    window.updateSettingsOnly = () => {
-        const ticker = document.getElementById('ticker-text').value;
-        if(ticker) {
-            update(ref(db, 'channel_status'), { tickerText: ticker })
-            .then(() => alert("تم تحديث الشريط"));
+        // تسجيل دخول المشرف
+        function registerAdmin() {
+            const adminId = 'admin_' + Math.random().toString(36).substr(2, 9);
+            const adminRef = ref(db, `viewers/${adminId}`);
+            set(adminRef, {
+                joinedAt: Date.now(),
+                page: 'admin'
+            });
+            onDisconnect(adminRef).remove();
         }
-    };
-</script>
 
+        // مراقبة عدد المشاهدين
+        onValue(ref(db, 'viewers'), (snapshot) => {
+            const data = snapshot.val();
+            let count = 0;
+            if(data) {
+                Object.values(data).forEach(v => {
+                    if(v.page === 'channel') count++;
+                });
+            }
+            document.getElementById('viewers-count').textContent = count;
+        });
+
+        // مراقبة حالة البث
+        onValue(ref(db, 'channel_status'), (snapshot) => {
+            const data = snapshot.val();
+            const indicator = document.getElementById('status-indicator');
+            const statusText = document.getElementById('status-text');
+            
+            if(data && data.playlist && data.playlist.length > 0) {
+                indicator.className = 'status-indicator status-live';
+                statusText.textContent = 'البث جارٍ';
+            } else {
+                indicator.className = 'status-indicator status-offline';
+                statusText.textContent = 'غير متصل';
+            }
+        });
+
+        // تسجيل الدخول
+        window.attemptLogin = () => {
+            const password = document.getElementById('password-input').value;
+            if(password === ADMIN_PASSWORD) {
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('main-app').style.display = 'block';
+                document.getElementById('login-error').style.display = 'none';
+                registerAdmin();
+            } else {
+                document.getElementById('login-error').style.display = 'block';
+                document.getElementById('password-input').value = '';
+            }
+        };
+
+        // Enter key for login
+        document.getElementById('password-input').addEventListener('keypress', (e) => {
+            if(e.key === 'Enter') attemptLogin();
+        });
+
+        window.logout = () => {
+            location.reload();
+        };
+
+        // التابات
+        window.switchTab = (tabName) => {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById('tab-' + tabName).classList.add('active');
+        };
+
+        // تحديث placeholder حسب المنصة
+        window.updatePlaceholder = () => {
+            const platform = document.getElementById('vid-platform').value;
+            const urlInput = document.getElementById('vid-url');
+            
+            const placeholders = {
+                youtube: 'معرف الفيديو أو الرابط (مثل: jfKfPfyJRdk)',
+                tiktok: 'رابط فيديو تيك توك كامل',
+                facebook: 'رابط فيديو فيسبوك كامل',
+                direct: 'رابط مباشر للملف (m3u8, mp4)'
+            };
+            
+            urlInput.placeholder = placeholders[platform];
+        };
+
+        // إضافة فيديو
+        window.addVideo = () => {
+            const platform = document.getElementById('vid-platform').value;
+            const url = document.getElementById('vid-url').value.trim();
+            const title = document.getElementById('vid-title').value.trim();
+            const duration = parseInt(document.getElementById('vid-duration').value) || 180;
+
+            if(!url) return alert('الرجاء إدخال الرابط أو المعرف');
+
+            let item = {
+                type: platform,
+                title: title || 'فيديو',
+                duration: duration
+            };
+
+            // استخراج معرف يوتيوب من الرابط
+            if(platform === 'youtube') {
+                let videoId = url;
+                if(url.includes('youtube.com') || url.includes('youtu.be')) {
+                    const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\?\/]+)/);
+                    if(match) videoId = match[1];
+                }
+                item.id = videoId;
+            } else {
+                item.url = url;
+            }
+
+            playlistQueue.push(item);
+            renderPlaylist();
+            
+            // تنظيف الحقول
+            document.getElementById('vid-url').value = '';
+            document.getElementById('vid-title').value = '';
+            document.getElementById('vid-duration').value = '';
+        };
+
+        // إضافة صورة مع صوت
+        window.addImageItem = () => {
+            const imageUrl = document.getElementById('img-url').value.trim();
+            const audioUrl = document.getElementById('audio-url').value.trim();
+            const title = document.getElementById('img-title').value.trim();
+            const duration = parseInt(document.getElementById('img-duration').value) || 60;
+
+            if(!imageUrl) return alert('الرجاء إدخال رابط الصورة');
+
+            const item = {
+                type: audioUrl ? 'audio-image' : 'image',
+                image: imageUrl,
+                audio: audioUrl || null,
+                title: title || 'صورة',
+                duration: duration
+            };
+
+            playlistQueue.push(item);
+            renderPlaylist();
+            
+            // تنظيف
+            document.getElementById('img-url').value = '';
+            document.getElementById('audio-url').value = '';
+            document.getElementById('img-title').value = '';
+            document.getElementById('img-duration').value = '';
+        };
+
+        // معالجة الملف المرفوع
+        window.handleFileSelect = (event) => {
+            const file = event.target.files[0];
+            if(!file) return;
+
+            document.getElementById('file-name').textContent = `📁 ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`;
+            document.getElementById('upload-preview').style.display = 'block';
+            document.getElementById('upload-form').style.display = 'block';
+            
+            // إنشاء URL محلي للمعاينة
+            uploadedFileUrl = URL.createObjectURL(file);
+            uploadedFileType = file.type.startsWith('video') ? 'direct' : 'audio-image';
+        };
+
+        // إضافة الملف المرفوع
+        window.addUploadedFile = () => {
+            const title = document.getElementById('upload-title').value.trim();
+            const duration = parseInt(document.getElementById('upload-duration').value) || 180;
+
+            if(!uploadedFileUrl) return alert('الرجاء رفع ملف أولاً');
+
+            const item = {
+                type: uploadedFileType,
+                url: uploadedFileUrl,
+                title: title || 'ملف محلي',
+                duration: duration
+            };
+
+            if(uploadedFileType === 'audio-image') {
+                item.image = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080"><rect fill="%231a1a2e" width="100%" height="100%"/><text x="50%" y="50%" fill="white" font-size="48" text-anchor="middle" dy=".3em">قناة الأحمدية</text></svg>';
+            }
+
+            playlistQueue.push(item);
+            renderPlaylist();
+            
+            // تنظيف
+            document.getElementById('upload-title').value = '';
+            document.getElementById('upload-duration').value = '';
+            document.getElementById('upload-preview').style.display = 'none';
+            document.getElementById('upload-form').style.display = 'none';
+            uploadedFileUrl = '';
+        };
+
+        // عرض القائمة
+        function renderPlaylist() {
+            const container = document.getElementById('playlist-container');
+            const totalItemsEl = document.getElementById('total-items');
+            const totalDurationEl = document.getElementById('total-duration');
+
+            if(playlistQueue.length === 0) {
+                container.innerHTML = `
+                    <p style="text-align: center; opacity: 0.5; padding: 40px;">
+                        <i class="fas fa-inbox" style="font-size: 3rem; margin-bottom: 15px; display: block;"></i>
+                        القائمة فارغة
+                    </p>
+                `;
+                totalItemsEl.textContent = '0';
+                totalDurationEl.textContent = '00:00';
+                return;
+            }
+
+            let totalSeconds = 0;
+            let html = '';
+
+            playlistQueue.forEach((item, index) => {
+                totalSeconds += item.duration;
+                const badgeClass = {
+                    youtube: 'badge-youtube',
+                    tiktok: 'badge-tiktok',
+                    facebook: 'badge-facebook',
+                    direct: 'badge-direct',
+                    'audio-image': 'badge-audio',
+                    image: 'badge-audio'
+                }[item.type] || 'badge-direct';
+
+                html += `
+                    <div class="playlist-item" draggable="true" ondragstart="dragStart(event, ${index})" ondragover="dragOver(event)" ondrop="drop(event, ${index})">
+                        <div class="playlist-item-info">
+                            <h4>${index + 1}. ${item.title}</h4>
+                            <div class="playlist-item-meta">
+                                <span class="badge ${badgeClass}">${item.type}</span>
+                                <span>${formatDuration(item.duration)}</span>
+                            </div>
+                        </div>
+                        <button class="btn btn-danger btn-sm" onclick="removeItem(${index})">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+            totalItemsEl.textContent = playlistQueue.length;
+            totalDurationEl.textContent = formatDuration(totalSeconds);
+        }
+
+        function formatDuration(seconds) {
+            const h = Math.floor(seconds / 3600);
+            const m = Math.floor((seconds % 3600) / 60);
+            const s = seconds % 60;
+            
+            if(h > 0) {
+                return `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+            }
+            return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+        }
+
+        window.removeItem = (index) => {
+            playlistQueue.splice(index, 1);
+            renderPlaylist();
+        };
+
+        window.clearPlaylist = () => {
+            if(confirm('هل أنت متأكد من مسح كل القائمة؟')) {
+                playlistQueue = [];
+                renderPlaylist();
+            }
+        };
+
+        // Drag & Drop
+        let draggedIndex = null;
+        
+        window.dragStart = (e, index) => {
+            draggedIndex = index;
+            e.dataTransfer.effectAllowed = 'move';
+        };
+
+        window.dragOver = (e) => {
+            e.preventDefault();
+        };
+
+        window.drop = (e, index) => {
+            e.preventDefault();
+            if(draggedIndex !== null && draggedIndex !== index) {
+                const item = playlistQueue.splice(draggedIndex, 1)[0];
+                playlistQueue.splice(index, 0, item);
+                renderPlaylist();
+            }
+            draggedIndex = null;
+        };
+
+        // تحديث الإعلانات
+        window.updateAds = () => {
+            const rightShow = document.getElementById('ad-right-toggle').checked;
+            const rightUrl = document.getElementById('ad-right-url').value;
+            const leftShow = document.getElementById('ad-left-toggle').checked;
+            const leftUrl = document.getElementById('ad-left-url').value;
+
+            update(ref(db, 'channel_status/sideAds'), {
+                right: { show: rightShow, url: rightUrl },
+                left: { show: leftShow, url: leftUrl }
+            }).then(() => alert('تم حفظ الإعلانات'));
+        };
+
+        // تحديث الراعي
+        window.updateSponsor = () => {
+            const show = document.getElementById('sponsor-toggle').checked;
+            const url = document.getElementById('sponsor-url').value;
+
+            update(ref(db, 'channel_status'), {
+                sponsor: { show, url }
+            }).then(() => alert('تم الحفظ'));
+        };
+
+        // بدء البث
+        window.goLive = () => {
+            if(playlistQueue.length === 0) {
+                return alert('القائمة فارغة! أضف بعض المحتوى أولاً');
+            }
+
+            const tickerText = document.getElementById('ticker-text').value || 'أهلاً بكم في قناة الأحمدية';
+
+            set(ref(db, 'channel_status'), {
+                playlist: playlistQueue,
+                playlistStartTime: Date.now(),
+                tickerText: tickerText,
+                tickerSpeed: 25,
+                sponsor: {
+                    show: document.getElementById('sponsor-toggle').checked,
+                    url: document.getElementById('sponsor-url').value
+                },
+                sideAds: {
+                    right: {
+                        show: document.getElementById('ad-right-toggle').checked,
+                        url: document.getElementById('ad-right-url').value
+                    },
+                    left: {
+                        show: document.getElementById('ad-left-toggle').checked,
+                        url: document.getElementById('ad-left-url').value
+                    }
+                }
+            }).then(() => {
+                alert('🚀 تم بدء البث المباشر بنجاح!');
+            });
+        };
+
+        // إيقاف البث
+        window.stopBroadcast = () => {
+            if(confirm('هل أنت متأكد من إيقاف البث؟')) {
+                remove(ref(db, 'channel_status/playlist'));
+                remove(ref(db, 'channel_status/playlistStartTime'));
+            }
+        };
+    </script>
 </body>
 </html>
