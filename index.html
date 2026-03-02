@@ -3,356 +3,309 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>الاحمدية لايف | بث مباشر</title>
+    <title>الاحمدية لايف | نظام البث المطور</title>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <style>
-        /* التنسيقات العامة */
         :root {
-            --main-color: #c0392b; /* لون الهوية - أحمر */
+            --main-color: #c0392b;
             --bg-color: #1a1a1a;
-            --text-color: #ffffff;
         }
         body, html {
-            margin: 0;
-            padding: 0;
-            height: 100%;
+            margin: 0; padding: 0; height: 100%;
             background-color: var(--bg-color);
-            color: var(--text-color);
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            overflow: hidden; /* لمنع التمرير في صفحة المشاهدة */
+            overflow: hidden;
         }
 
-        /* حاوية التلفزيون */
+        /* حاوية الشاشة */
         #tv-container {
             position: relative;
             width: 100%;
             height: 100vh;
             background: #000;
-            display: flex;
-            justify-content: center;
-            align-items: center;
         }
 
-        /* مشغل الفيديو */
+        /* الطبقات المختلفة للمشغلات */
+        .player-layer {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            display: none; /* مخفي افتراضياً */
+        }
+        
+        /* مشغل يوتيوب */
+        #youtube-player { z-index: 1; pointer-events: none; /* لمنع النقر وإيقاف الفيديو */ }
+        
+        /* مشغل الفيديو العادي والروابط المباشرة */
         video {
-            width: 100%;
-            height: 100%;
-            object-fit: contain; /* للحفاظ على أبعاد الفيديو */
+            width: 100%; height: 100%;
+            object-fit: contain;
+        }
+
+        /* مشغل المواقع الأخرى (فيسبوك/تيك توك) */
+        iframe.generic-embed {
+            width: 100%; height: 100%;
+            border: none;
+        }
+
+        /* طبقة حماية شفافة لمنع إيقاف الفيديو بالنقر */
+        #interaction-blocker {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 85%; /* نترك مساحة للشريط السفلي */
+            z-index: 5;
+            background: transparent;
         }
 
         /* شعار القناة */
         .channel-logo {
             position: absolute;
-            top: 20px;
-            right: 20px;
-            z-index: 10;
-            background: rgba(0, 0, 0, 0.5);
-            padding: 10px;
+            top: 30px; right: 30px; z-index: 20;
+            background: rgba(150, 0, 0, 0.7);
+            padding: 10px 20px;
             border-radius: 5px;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            gap: 10px;
+            color: white; font-weight: bold;
+            display: flex; gap: 10px; align-items: center;
         }
-        .live-badge {
-            background-color: red;
-            color: white;
-            padding: 2px 8px;
-            font-size: 12px;
-            border-radius: 3px;
-            animation: pulse 1.5s infinite;
+        .live-dot {
+            width: 10px; height: 10px; background: #fff; border-radius: 50%;
+            animation: blink 1s infinite;
         }
 
-        /* الإعلانات الصورية */
-        #ad-overlay {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            width: 200px; /* حجم الإعلان */
-            z-index: 9;
-            display: none; /* مخفي افتراضيا */
-        }
-        #ad-overlay img {
-            width: 100%;
-            border-radius: 5px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.5);
-        }
-
-        /* شريط الأخبار المتحرك */
+        /* شريط الأخبار */
         .ticker-wrap {
-            position: absolute;
-            bottom: 0;
-            width: 100%;
-            height: 50px;
-            background-color: rgba(192, 57, 43, 0.9); /* خلفية حمراء نصف شفافة */
-            overflow: hidden;
-            box-sizing: border-box;
-            white-space: nowrap;
-            display: flex;
-            align-items: center;
-            z-index: 20;
-            border-top: 2px solid gold;
+            position: absolute; bottom: 0; left: 0; width: 100%; height: 50px;
+            background: rgba(192, 57, 43, 0.95);
+            z-index: 20; border-top: 3px solid #f1c40f;
+            overflow: hidden; display: flex; align-items: center;
         }
         .ticker-content {
-            display: inline-block;
+            white-space: nowrap;
             padding-left: 100%;
-            animation: ticker 30s linear infinite;
-            font-size: 1.2rem;
-            font-weight: bold;
+            animation: ticker 25s linear infinite;
+            color: white; font-size: 1.2rem; font-weight: bold;
         }
 
-        @keyframes ticker {
-            0% { transform: translate3d(0, 0, 0); }
-            100% { transform: translate3d(100%, 0, 0); } /* اتجاه لليمين للعربية */
-        }
-        @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.5; }
-            100% { opacity: 1; }
-        }
-
-        /* زر دخول الأدمن */
-        #admin-btn {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 20px;
-            height: 20px;
-            z-index: 100;
+        /* شاشة البدء (لحل مشكلة الصوت) */
+        #start-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9);
+            z-index: 1000;
+            display: flex; flex-direction: column;
+            justify-content: center; align-items: center; color: white;
             cursor: pointer;
-            opacity: 0; /* مخفي */
         }
+        #start-overlay h1 { margin-bottom: 20px; }
+        .play-btn {
+            font-size: 50px; border: 2px solid white; border-radius: 50%;
+            width: 80px; height: 80px; display: flex;
+            justify-content: center; align-items: center;
+            transition: 0.3s;
+        }
+        #start-overlay:hover .play-btn { background: var(--main-color); border-color: var(--main-color); }
 
-        /* لوحة التحكم */
-        #admin-panel {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: #fff;
-            color: #333;
-            padding: 20px;
-            border-radius: 10px;
-            width: 90%;
-            max-width: 500px;
-            z-index: 200;
-            display: none;
-            box-shadow: 0 0 20px rgba(0,0,0,0.5);
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-        #admin-panel h2 { margin-top: 0; border-bottom: 2px solid var(--main-color); padding-bottom: 10px; }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; }
-        input[type="text"], input[type="url"], textarea {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            box-sizing: border-box;
-        }
-        .btn {
-            background: var(--main-color);
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            cursor: pointer;
-            border-radius: 4px;
-            width: 100%;
-            font-size: 16px;
-        }
-        .btn-close { background: #555; margin-top: 10px; }
+        /* الأنيميشن */
+        @keyframes blink { 0% {opacity:1;} 50% {opacity:0.3;} 100% {opacity:1;} }
+        @keyframes ticker { 0% {transform: translate3d(0,0,0);} 100% {transform: translate3d(100%,0,0);} }
 
-        /* منطقة تصدير الكود */
-        #export-area {
-            background: #f1f1f1;
-            padding: 10px;
-            margin-top: 10px;
-            font-family: monospace;
-            font-size: 12px;
-            display: none;
-            word-break: break-all;
-        }
+        /* زر التحكم المخفي */
+        #admin-trigger { position: absolute; top:0; left:0; width: 30px; height: 30px; z-index: 2000; cursor: default; }
     </style>
 </head>
 <body>
 
-    <div id="tv-container">
-        <div class="channel-logo">
-            <span class="live-badge">مباشر</span>
+    <div id="start-overlay" onclick="startBroadcast()">
+        <div class="channel-logo" style="position:static; margin-bottom:20px;">
             <span>الاحمدية لايف</span>
         </div>
+        <div class="play-btn">▶</div>
+        <p>اضغط في أي مكان لبدء المشاهدة</p>
+    </div>
 
-        <div id="ad-overlay">
-            <img id="ad-image" src="" alt="إعلان">
+    <div id="tv-container">
+        <div class="channel-logo">
+            <div class="live-dot"></div>
+            <span>مباشر</span>
         </div>
 
-        <video id="main-player" autoplay playsinline>
-            <source src="" type="video/mp4">
-            متصفحك لا يدعم تشغيل الفيديو.
-        </video>
+        <div id="interaction-blocker"></div>
+
+        <div id="youtube-player" class="player-layer"></div>
+
+        <video id="native-player" class="player-layer" playsinline></video>
+
+        <div id="iframe-container" class="player-layer">
+            <iframe id="generic-frame" class="generic-embed" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+        </div>
 
         <div class="ticker-wrap">
             <div class="ticker-content" id="ticker-text">
-                أهلاً بكم في إذاعة الاحمدية لايف - بث تجريبي - نتشرف بمتابعتكم
+                أهلاً بكم في البث التجريبي لقناة الاحمدية لايف - نعرض لكم أفضل البرامج الدينية والثقافية.
             </div>
         </div>
     </div>
 
-    <div id="admin-btn" onclick="openAdmin()"></div>
-
-    <div id="admin-panel">
-        <h2>لوحة التحكم - ستوديو البث</h2>
-        
-        <div class="form-group">
-            <label>رابط الفيديو (MP4 مباشر):</label>
-            <input type="url" id="video-url-input" placeholder="https://example.com/video.mp4">
-            <small>يفضل رابط مباشر ينتهي بـ .mp4</small>
-        </div>
-
-        <div class="form-group">
-            <label>نص الشريط المتحرك:</label>
-            <textarea id="ticker-input" rows="2"></textarea>
-        </div>
-
-        <div class="form-group">
-            <label>رابط صورة الإعلان (أو اتركها فارغة للإخفاء):</label>
-            <input type="text" id="ad-url-input" placeholder="رابط الصورة">
-        </div>
-
-        <button class="btn" onclick="saveSettings()">تطبيق الإعدادات</button>
-        
-        <div id="export-area">
-            <strong>هام لـ GitHub:</strong> لكي يرى الناس هذه التغييرات، يجب أن تنسخ الكود التالي وتستبدل قسم "CONFIG" في كود الصفحة الأصلي:<br><br>
-            <div id="json-output"></div>
-        </div>
-
-        <button class="btn btn-close" onclick="closeAdmin()">إغلاق</button>
-    </div>
+    <div id="admin-trigger" ondblclick="alert('قريباً: لوحة تحكم للقائمة')"></div>
 
     <script>
-        // === إعدادات القناة الافتراضية (هذا الجزء الذي ستقوم بتعديله ليعمل عند الجميع) ===
-        // يمكنك وضع عدة مقاطع فيديو لتعمل بالتتابع (الجدولة)
-        let channelConfig = {
-            playlist: [
-                {
-                    url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4", // فيديو تجريبي
-                    duration: 596 // المدة بالثواني (مهم للجدولة)
+        // ==========================================
+        // إعدادات قائمة التشغيل (عدل هنا)
+        // ==========================================
+        
+        // الأنواع المدعومة: 
+        // 'youtube' (ضع معرف الفيديو فقط)
+        // 'direct' (رابط mp4 أو m3u8 مباشر)
+        // 'embed' (رابط التضمين الكامل لفيسبوك/تيك توك)
+        
+        const playlist = [
+            {
+                type: 'youtube',
+                id: 'jfKfPfyJRdk', // مثال: بث مباشر لقناة يوتيوب (لورا) أو فيديو عادي
+                title: 'بث يوتيوب مباشر'
+            },
+            {
+                type: 'direct',
+                url: 'https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8', // مثال لرابط بث فضائي m3u8
+                title: 'بث تجريبي HLS'
+            },
+            {
+                type: 'youtube',
+                id: 'aqz-KE-bpKQ', // فيديو يوتيوب عادي (Big Buck Bunny)
+                title: 'فيديو يوتيوب'
+            },
+            {
+                type: 'direct',
+                url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
+                title: 'فيديو MP4'
+            }
+        ];
+
+        // ==========================================
+        // منطق النظام (لا تعدل أدناه إلا إذا كنت خبيراً)
+        // ==========================================
+
+        let currentIndex = 0;
+        let ytPlayer;
+        let isStarted = false;
+        const nativePlayer = document.getElementById('native-player');
+        const iframeContainer = document.getElementById('iframe-container');
+        const genericFrame = document.getElementById('generic-frame');
+        const ytContainer = document.getElementById('youtube-player');
+
+        // 1. تحميل مكتبة يوتيوب API
+        var tag = document.createElement('script');
+        tag.src = "https://www.youtube.com/iframe_api";
+        var firstScriptTag = document.getElementsByTagName('script')[0];
+        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+        function onYouTubeIframeAPIReady() {
+            ytPlayer = new YT.Player('youtube-player', {
+                height: '100%',
+                width: '100%',
+                playerVars: {
+                    'playsinline': 1,
+                    'controls': 0, // إخفاء التحكم
+                    'rel': 0,
+                    'modestbranding': 1,
+                    'iv_load_policy': 3
                 },
-                {
-                    url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
-                    duration: 653
+                events: {
+                    'onStateChange': onPlayerStateChange
                 }
-            ],
-            tickerText: "عاجل: انطلاق بث إذاعة الاحمدية لايف رسمياً - تابعونا على مدار الساعة",
-            adImage: "" // ضع رابط صورة هنا لتظهر كإعلان
+            });
+        }
+
+        // دالة بدء البث عند ضغط المستخدم (لحل مشكلة الصوت)
+        function startBroadcast() {
+            document.getElementById('start-overlay').style.display = 'none';
+            isStarted = true;
+            playItem(currentIndex);
+        }
+
+        // دالة التشغيل الرئيسية
+        function playItem(index) {
+            if (!isStarted) return;
+            
+            // التأكد من عدم الخروج عن حدود القائمة
+            if (index >= playlist.length) {
+                currentIndex = 0; // إعادة من البداية (Loop)
+            } else {
+                currentIndex = index;
+            }
+
+            const item = playlist[currentIndex];
+            console.log("Playing:", item.title);
+
+            // إخفاء جميع المشغلات أولاً
+            ytContainer.style.display = 'none';
+            nativePlayer.style.display = 'none';
+            iframeContainer.style.display = 'none';
+            
+            // إيقاف المشغلات السابقة
+            nativePlayer.pause();
+            if(ytPlayer && ytPlayer.stopVideo) ytPlayer.stopVideo();
+            genericFrame.src = "";
+
+            // تشغيل النوع المناسب
+            if (item.type === 'youtube') {
+                playYouTube(item.id);
+            } else if (item.type === 'direct') {
+                playDirect(item.url);
+            } else if (item.type === 'embed') {
+                playEmbed(item.url);
+            }
+        }
+
+        // === منطق يوتيوب ===
+        function playYouTube(videoId) {
+            ytContainer.style.display = 'block';
+            if (ytPlayer && ytPlayer.loadVideoById) {
+                ytPlayer.loadVideoById(videoId);
+                ytPlayer.playVideo();
+                ytPlayer.unMute(); // التأكد من تشغيل الصوت
+            }
+        }
+
+        function onPlayerStateChange(event) {
+            // 0 تعني انتهى الفيديو
+            if (event.data === YT.PlayerState.ENDED) {
+                playItem(currentIndex + 1);
+            }
+        }
+
+        // === منطق الفيديو المباشر (MP4 / HLS) ===
+        function playDirect(url) {
+            nativePlayer.style.display = 'block';
+            
+            if (Hls.isSupported() && url.endsWith('.m3u8')) {
+                const hls = new Hls();
+                hls.loadSource(url);
+                hls.attachMedia(nativePlayer);
+                hls.on(Hls.Events.MANIFEST_PARSED, function() {
+                    nativePlayer.play();
+                });
+            } else if (nativePlayer.canPlayType('application/vnd.apple.mpegurl') && url.endsWith('.m3u8')) {
+                // لدعم سفاري
+                nativePlayer.src = url;
+                nativePlayer.play();
+            } else {
+                // MP4 عادي
+                nativePlayer.src = url;
+                nativePlayer.play();
+            }
+            nativePlayer.muted = false; // تشغيل الصوت
+        }
+
+        // الانتقال للتالي عند انتهاء الفيديو العادي
+        nativePlayer.onended = function() {
+            playItem(currentIndex + 1);
         };
 
-        const player = document.getElementById('main-player');
-        const ticker = document.getElementById('ticker-text');
-        const adOverlay = document.getElementById('ad-overlay');
-        const adImg = document.getElementById('ad-image');
-
-        // === منطق التشغيل والجدولة ===
-        
-        function initChannel() {
-            // 1. تحميل الإعدادات المحفوظة محلياً (للمعاينة)
-            const savedConfig = localStorage.getItem('ahmadia_config');
-            if (savedConfig) {
-                const parsed = JSON.parse(savedConfig);
-                // دمج الإعدادات المحفوظة مع الهيكل الأساسي
-                if(parsed.currentVideo) channelConfig.playlist[0].url = parsed.currentVideo;
-                if(parsed.ticker) channelConfig.tickerText = parsed.ticker;
-                if(parsed.ad) channelConfig.adImage = parsed.ad;
-            }
-
-            // 2. تطبيق النصوص والإعلانات
-            ticker.textContent = channelConfig.tickerText;
-            
-            if (channelConfig.adImage && channelConfig.adImage.trim() !== "") {
-                adImg.src = channelConfig.adImage;
-                adOverlay.style.display = 'block';
-            } else {
-                adOverlay.style.display = 'none';
-            }
-
-            // 3. تشغيل الفيديو
-            // في النسخة البسيطة سنقوم بتشغيل الفيديو الأول وتكراره
-            // لتفعيل الجدولة الحقيقية نحتاج حساب الوقت
-            playStream();
+        // === منطق الروابط المضمنة (Embed) ===
+        function playEmbed(url) {
+            iframeContainer.style.display = 'block';
+            genericFrame.src = url;
+            // ملاحظة: لا يمكننا معرفة متى ينتهي الفيديو في Iframe خارجي
+            // لذلك سيبقى يعمل حتى يتم تغييره يدوياً أو نضع مؤقت زمني
         }
-
-        function playStream() {
-            // هنا نأخذ أول فيديو كمثال للبث المستمر
-            const currentVideo = channelConfig.playlist[0].url;
-            
-            if (player.src !== currentVideo) {
-                player.src = currentVideo;
-                player.load();
-            }
-            
-            // محاولة التشغيل التلقائي (المتصفحات تتطلب تفاعل المستخدم للصوت)
-            player.play().catch(e => {
-                console.log("يجب على المستخدم التفاعل لتشغيل الصوت");
-                player.muted = true; // البدء صامتاً لتجاوز الحظر
-                player.play();
-                // يمكن إضافة زر هنا "انقر لتشغيل الصوت"
-            });
-
-            // عند انتهاء الفيديو، يعيد تشغيله (Loop) أو ينتقل للتالي
-            player.onended = () => {
-                player.play(); 
-            };
-        }
-
-        // === دوال لوحة التحكم ===
-
-        function openAdmin() {
-            const pass = prompt("أدخل كلمة مرور المسؤول:");
-            if (pass === "1234") { // غير كلمة المرور هنا
-                document.getElementById('admin-panel').style.display = 'block';
-                // تعبئة الحقول بالبيانات الحالية
-                document.getElementById('video-url-input').value = channelConfig.playlist[0].url;
-                document.getElementById('ticker-input').value = channelConfig.tickerText;
-                document.getElementById('ad-url-input').value = channelConfig.adImage;
-            } else {
-                alert("كلمة المرور خاطئة");
-            }
-        }
-
-        function closeAdmin() {
-            document.getElementById('admin-panel').style.display = 'none';
-        }
-
-        function saveSettings() {
-            const newVideo = document.getElementById('video-url-input').value;
-            const newTicker = document.getElementById('ticker-input').value;
-            const newAd = document.getElementById('ad-url-input').value;
-
-            // تحديث الواجهة فوراً للمعاينة
-            channelConfig.playlist[0].url = newVideo;
-            channelConfig.tickerText = newTicker;
-            channelConfig.adImage = newAd;
-            
-            // الحفظ في المتصفح (localStorage) لكي تراها أنت فقط
-            const saveObj = {
-                currentVideo: newVideo,
-                ticker: newTicker,
-                ad: newAd
-            };
-            localStorage.setItem('ahmadia_config', JSON.stringify(saveObj));
-
-            // إنشاء كود JSON للمستخدم لينسخه إلى GitHub
-            const jsonString = JSON.stringify(channelConfig, null, 4);
-            document.getElementById('export-area').style.display = 'block';
-            document.getElementById('json-output').innerText = 
-                `عدل المتغير channelConfig في الكود ليصبح:\n let channelConfig = ${jsonString};`;
-
-            initChannel(); // إعادة تحميل القناة
-            alert("تم تطبيق الإعدادات محلياً! لتعميمها انسخ الكود الظاهر أسفل الزر وضعه في الملف على GitHub.");
-        }
-
-        // تشغيل القناة عند التحميل
-        window.onload = initChannel;
 
     </script>
 </body>
