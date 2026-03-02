@@ -6,21 +6,102 @@
     <title>الاحمدية لايف | بث مباشر</title>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <style>
-        :root { --main-color: #c0392b; --bg-color: #1a1a1a; }
-        body, html { margin: 0; padding: 0; height: 100%; background-color: var(--bg-color); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; overflow: hidden; }
-        #tv-container { position: relative; width: 100%; height: 100vh; background: #000; }
-        .player-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none; }
-        #youtube-player { z-index: 1; pointer-events: none; }
-        video { width: 100%; height: 100%; object-fit: contain; }
-        iframe.generic-embed { width: 100%; height: 100%; border: none; }
-        #interaction-blocker { position: absolute; top: 0; left: 0; width: 100%; height: 85%; z-index: 5; background: transparent; }
-        .channel-logo { position: absolute; top: 30px; right: 30px; z-index: 20; background: rgba(150, 0, 0, 0.7); padding: 10px 20px; border-radius: 5px; color: white; font-weight: bold; display: flex; gap: 10px; align-items: center; }
+        /* === التنسيقات العامة === */
+        :root { --main-color: #c0392b; --bg-color: #000; }
+        
+        body, html { 
+            margin: 0; padding: 0; 
+            width: 100%; height: 100%; 
+            background-color: var(--bg-color); 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            overflow: hidden; 
+        }
+
+        /* حاوية الشاشة الرئيسية */
+        #tv-container { 
+            position: relative; 
+            width: 100vw; 
+            height: 100vh; 
+            background: #000; 
+            overflow: hidden;
+        }
+
+        /* === طبقات المشغلات === */
+        .player-layer { 
+            position: absolute; 
+            top: 0; left: 0; 
+            width: 100%; height: 100%; 
+            border: none;
+            display: none; /* مخفي افتراضياً */
+        }
+
+        /* إصلاح مشكلة اختفاء صورة يوتيوب */
+        #youtube-player, iframe {
+            width: 100% !important;
+            height: 100% !important;
+            border: none;
+            display: block;
+        }
+        
+        /* جعل الفيديو يملأ الشاشة مع الحفاظ على الأبعاد */
+        video { 
+            width: 100%; height: 100%; 
+            object-fit: contain; 
+            background: #000;
+        }
+
+        /* === العناصر العائمة (الشعار، الشريط) === */
+        
+        /* طبقة حماية شفافة لمنع النقر على الفيديو */
+        #interaction-blocker { 
+            position: absolute; 
+            top: 0; left: 0; 
+            width: 100%; height: 85%; 
+            z-index: 50; 
+            background: transparent; 
+        }
+
+        .channel-logo { 
+            position: absolute; top: 30px; right: 30px; 
+            z-index: 100; /* قيمة عالية لتظهر فوق الفيديو */
+            background: rgba(150, 0, 0, 0.7); 
+            padding: 10px 20px; border-radius: 5px; 
+            color: white; font-weight: bold; 
+            display: flex; gap: 10px; align-items: center; 
+            pointer-events: none;
+        }
+
         .live-dot { width: 10px; height: 10px; background: #fff; border-radius: 50%; animation: blink 1s infinite; }
-        .ticker-wrap { position: absolute; bottom: 0; left: 0; width: 100%; height: 50px; background: rgba(192, 57, 43, 0.95); z-index: 20; border-top: 3px solid #f1c40f; overflow: hidden; display: flex; align-items: center; }
-        .ticker-content { white-space: nowrap; padding-left: 100%; animation: ticker 25s linear infinite; color: white; font-size: 1.2rem; font-weight: bold; }
-        #start-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 1000; display: flex; flex-direction: column; justify-content: center; align-items: center; color: white; cursor: pointer; }
-        .play-btn { font-size: 50px; border: 2px solid white; border-radius: 50%; width: 80px; height: 80px; display: flex; justify-content: center; align-items: center; transition: 0.3s; }
+
+        .ticker-wrap { 
+            position: absolute; bottom: 0; left: 0; 
+            width: 100%; height: 50px; 
+            background: rgba(192, 57, 43, 0.95); 
+            z-index: 100; /* قيمة عالية */
+            border-top: 3px solid #f1c40f; 
+            overflow: hidden; display: flex; align-items: center; 
+        }
+        
+        .ticker-content { 
+            white-space: nowrap; padding-left: 100%; 
+            animation: ticker 25s linear infinite; 
+            color: white; font-size: 1.2rem; font-weight: bold; 
+        }
+
+        /* === شاشة البدء === */
+        #start-overlay { 
+            position: fixed; top: 0; left: 0; 
+            width: 100%; height: 100%; 
+            background: rgba(0,0,0,0.95); 
+            z-index: 9999; /* أعلى شيء */
+            display: flex; flex-direction: column; 
+            justify-content: center; align-items: center; 
+            color: white; cursor: pointer; 
+        }
+        
+        .play-btn { font-size: 50px; border: 2px solid white; border-radius: 50%; width: 80px; height: 80px; display: flex; justify-content: center; align-items: center; transition: 0.3s; margin-bottom: 20px; }
         #start-overlay:hover .play-btn { background: var(--main-color); border-color: var(--main-color); }
+
         @keyframes blink { 0% {opacity:1;} 50% {opacity:0.3;} 100% {opacity:1;} }
         @keyframes ticker { 0% {transform: translate3d(0,0,0);} 100% {transform: translate3d(100%,0,0);} }
     </style>
@@ -30,66 +111,68 @@
     <div id="start-overlay" onclick="startBroadcast()">
         <div class="channel-logo" style="position:static; margin-bottom:20px;"><span>الاحمدية لايف</span></div>
         <div class="play-btn">▶</div>
-        <p>اضغط لبدء المشاهدة</p>
+        <p>اضغط في أي مكان لبدء البث</p>
     </div>
 
     <div id="tv-container">
         <div class="channel-logo"><div class="live-dot"></div><span>مباشر</span></div>
+        
         <div id="interaction-blocker"></div>
+
         <div id="youtube-player" class="player-layer"></div>
+
         <video id="native-player" class="player-layer" playsinline></video>
-        <div id="iframe-container" class="player-layer"><iframe id="generic-frame" class="generic-embed" allow="autoplay; encrypted-media" allowfullscreen></iframe></div>
-        <div class="ticker-wrap"><div class="ticker-content" id="ticker-text">جارٍ تحميل البث...</div></div>
+
+        <div id="iframe-container" class="player-layer" style="z-index: 1;">
+            <iframe id="generic-frame" class="generic-embed" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+        </div>
+
+        <div class="ticker-wrap">
+            <div class="ticker-content" id="ticker-text">جارٍ الاتصال بالسيرفر...</div>
+        </div>
     </div>
 
     <script>
-        // ==========================================
-        //  إعدادات الربط (تم وضع المعرف الخاص بك)
-        // ==========================================
+        // إعدادات الربط الخاصة بك
         const BIN_ID = '69a607f443b1c97be9ad21cb'; 
-        
-        // هام: ضع مفتاح API Key هنا إذا كانت البيانات Private
-        // إذا جعلتها Public، اتركها فارغة ''
-        const API_KEY = ''; 
+        const API_KEY = ''; // اتركه فارغاً إذا كان public
 
         let playlist = [];
         let currentIndex = 0;
         let ytPlayer;
         let isStarted = false;
+        
+        // تعريف العناصر
         const nativePlayer = document.getElementById('native-player');
         const iframeContainer = document.getElementById('iframe-container');
         const genericFrame = document.getElementById('generic-frame');
         const ytContainer = document.getElementById('youtube-player');
 
-        // جلب البيانات من السحابة
+        // جلب البيانات
         async function fetchChannelData() {
             try {
                 const headers = API_KEY ? { 'X-Master-Key': API_KEY } : {};
                 const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, { headers });
+                if (!res.ok) throw new Error("HTTP Status: " + res.status);
                 
-                if (!res.ok) throw new Error("HTTP error " + res.status);
                 const json = await res.json();
-                
-                // التأكد من وجود البيانات
                 if (json.record && json.record.playlist) {
                     playlist = json.record.playlist;
                     document.getElementById('ticker-text').innerText = json.record.ticker || "أهلاً بكم...";
-                    console.log("تم تحديث القائمة:", playlist.length, "عنصر");
-                } else {
-                    console.warn("القائمة فارغة أو التنسيق غير صحيح");
                 }
             } catch (e) {
-                console.error("فشل التحميل:", e);
-                document.getElementById('ticker-text').innerText = "جاري انتظار البث...";
+                console.error("Error fetching data:", e);
+                document.getElementById('ticker-text').innerText = "حدث خطأ في تحميل البث...";
             }
         }
 
+        // بدء التشغيل
         async function startBroadcast() {
             await fetchChannelData();
             document.getElementById('start-overlay').style.display = 'none';
             isStarted = true;
             if (playlist.length > 0) playItem(0);
-            else alert("لا يوجد بث حالياً، يرجى المحاولة لاحقاً");
+            else alert("القائمة فارغة حالياً");
         }
 
         // تحميل YouTube API
@@ -100,35 +183,72 @@
 
         function onYouTubeIframeAPIReady() {
             ytPlayer = new YT.Player('youtube-player', {
-                height: '100%', width: '100%',
-                playerVars: { 'playsinline': 1, 'controls': 0, 'rel': 0, 'modestbranding': 1, 'iv_load_policy': 3 },
-                events: { 'onStateChange': onPlayerStateChange }
+                height: '100%',
+                width: '100%',
+                playerVars: {
+                    'playsinline': 1,
+                    'controls': 0, // إخفاء التحكم
+                    'rel': 0,
+                    'autoplay': 0, // سنتحكم بالتشغيل يدوياً
+                    'modestbranding': 1,
+                    'iv_load_policy': 3,
+                    'origin': window.location.origin // هام للأمان
+                },
+                events: {
+                    'onStateChange': onPlayerStateChange,
+                    'onReady': onPlayerReady
+                }
             });
         }
 
+        function onPlayerReady(event) {
+            // المشغل جاهز
+            console.log("YouTube Player Ready");
+        }
+
+        // دالة التشغيل الرئيسية
         function playItem(index) {
             if (!isStarted || playlist.length === 0) return;
+            
             if (index >= playlist.length) currentIndex = 0;
             else currentIndex = index;
 
             const item = playlist[currentIndex];
-            
-            // إخفاء الكل
-            ytContainer.style.display = 'none';
-            nativePlayer.style.display = 'none';
-            iframeContainer.style.display = 'none';
-            nativePlayer.pause();
-            if(ytPlayer && ytPlayer.stopVideo) ytPlayer.stopVideo();
-            genericFrame.src = "";
+            console.log("Playing:", item.title, "Type:", item.type);
 
-            if (item.type === 'youtube') playYouTube(item.id);
-            else if (item.type === 'direct') playDirect(item.url);
-            else if (item.type === 'embed') playEmbed(item.url);
+            // 1. إعادة تعيين وإخفاء الكل
+            hideAllPlayers();
+
+            // 2. تشغيل النوع المناسب
+            if (item.type === 'youtube') {
+                playYouTube(item.id);
+            } else if (item.type === 'direct') {
+                playDirect(item.url);
+            } else if (item.type === 'embed') {
+                playEmbed(item.url);
+            }
+        }
+
+        function hideAllPlayers() {
+            // إخفاء يوتيوب (الـ iframe الذي تم إنشاؤه)
+            if(ytPlayer && ytPlayer.getIframe) {
+                ytPlayer.getIframe().style.display = 'none';
+                ytPlayer.stopVideo();
+            }
+            // إخفاء الفيديو العادي
+            nativePlayer.style.display = 'none';
+            nativePlayer.pause();
+            nativePlayer.src = "";
+            
+            // إخفاء التضمين
+            iframeContainer.style.display = 'none';
+            genericFrame.src = "";
         }
 
         function playYouTube(videoId) {
-            ytContainer.style.display = 'block';
             if (ytPlayer && ytPlayer.loadVideoById) {
+                // إظهار الـ iframe الخاص بيوتيوب
+                ytPlayer.getIframe().style.display = 'block';
                 ytPlayer.loadVideoById(videoId);
                 ytPlayer.playVideo();
                 ytPlayer.unMute();
@@ -136,16 +256,21 @@
         }
 
         function onPlayerStateChange(event) {
-            if (event.data === YT.PlayerState.ENDED) playItem(currentIndex + 1);
+            if (event.data === YT.PlayerState.ENDED) {
+                playItem(currentIndex + 1);
+            }
         }
 
         function playDirect(url) {
             nativePlayer.style.display = 'block';
+            
             if (Hls.isSupported() && url.endsWith('.m3u8')) {
                 const hls = new Hls();
                 hls.loadSource(url);
                 hls.attachMedia(nativePlayer);
-                hls.on(Hls.Events.MANIFEST_PARSED, function() { nativePlayer.play(); });
+                hls.on(Hls.Events.MANIFEST_PARSED, function() {
+                    nativePlayer.play();
+                });
             } else if (nativePlayer.canPlayType('application/vnd.apple.mpegurl')) {
                 nativePlayer.src = url;
                 nativePlayer.play();
@@ -156,12 +281,15 @@
             nativePlayer.muted = false;
         }
 
-        nativePlayer.onended = function() { playItem(currentIndex + 1); };
+        nativePlayer.onended = function() {
+            playItem(currentIndex + 1);
+        };
 
         function playEmbed(url) {
             iframeContainer.style.display = 'block';
             genericFrame.src = url;
         }
+
     </script>
 </body>
 </html>
