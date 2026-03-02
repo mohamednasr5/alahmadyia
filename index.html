@@ -5,37 +5,45 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>قناة الأحمدية | بث مباشر</title>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@700&family=Cairo:wght@900&display=swap" rel="stylesheet">
+    
     <style>
         :root { --main-color: #c0392b; --bg-color: #000; }
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; background-color: var(--bg-color); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; overflow: hidden; }
         #tv-container { position: relative; width: 100vw; height: 100vh; background: #000; overflow: hidden; }
-        
-        /* تنسيق اللوجو الجديد */
-        .brand-logo {
+
+        /* --- تصميم اللوجو الجديد --- */
+        .channel-logo-text {
             position: absolute;
             top: 30px; right: 30px;
             z-index: 200;
-            width: 100px; /* حجم اللوجو */
-            height: auto;
-            filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.8));
+            text-align: center;
+            line-height: 1.1;
+            filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.9));
+            pointer-events: none;
+        }
+        .logo-top {
+            display: block;
+            font-family: 'Amiri', serif;
+            font-size: 1.5rem;
+            color: #fff;
+            margin-bottom: -5px;
+        }
+        .logo-bottom {
+            display: block;
+            font-family: 'Cairo', sans-serif;
+            font-size: 2.5rem;
+            font-weight: 900;
+            color: #f1c40f; /* لون ذهبي */
+            text-transform: uppercase;
         }
 
+        /* بقية التنسيقات */
         .player-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none; }
         #youtube-player, iframe { width: 100% !important; height: 100% !important; border: none; display: block; }
         video { width: 100%; height: 100%; object-fit: contain; background: #000; }
-        
         #interaction-blocker { position: absolute; top: 0; left: 0; width: 100%; height: 85%; z-index: 50; background: transparent; }
         
-        /* علامة مباشر */
-        .live-badge { 
-            position: absolute; top: 40px; left: 30px; z-index: 200; 
-            background: red; color: white; padding: 5px 15px; 
-            border-radius: 4px; font-weight: bold; font-size: 14px;
-            display: flex; align-items: center; gap: 5px;
-            box-shadow: 0 0 10px rgba(255,0,0,0.5);
-        }
-        .live-dot { width: 8px; height: 8px; background: #fff; border-radius: 50%; animation: blink 1s infinite; }
-
         .ticker-wrap { position: absolute; bottom: 0; left: 0; width: 100%; height: 50px; background: rgba(192, 57, 43, 0.95); z-index: 100; border-top: 3px solid #f1c40f; overflow: hidden; display: flex; align-items: center; }
         .ticker-content { white-space: nowrap; padding-left: 100%; animation: ticker 25s linear infinite; color: white; font-size: 1.2rem; font-weight: bold; }
 
@@ -43,164 +51,172 @@
         .play-btn { font-size: 50px; border: 2px solid white; border-radius: 50%; width: 80px; height: 80px; display: flex; justify-content: center; align-items: center; transition: 0.3s; margin-bottom: 20px; }
         #start-overlay:hover .play-btn { background: var(--main-color); border-color: var(--main-color); }
 
-        @keyframes blink { 0% {opacity:1;} 50% {opacity:0.3;} 100% {opacity:1;} }
         @keyframes ticker { 0% {transform: translate3d(0,0,0);} 100% {transform: translate3d(100%,0,0);} }
     </style>
 </head>
 <body>
 
-    <div id="start-overlay" onclick="startBroadcast()">
-        <img src="https://raw.githubusercontent.com/mohamednasr5/alahmadiya/main/12.png" alt="شعار القناة" style="border-radius:50%; margin-bottom:20px;">
+    <div id="start-overlay">
+        <div class="channel-logo-text" style="position:static; margin-bottom:20px; transform: scale(1.5);">
+            <span class="logo-top">قناة</span>
+            <span class="logo-bottom">الأحمدية</span>
+        </div>
         <div class="play-btn">▶</div>
-        <p>اضغط لبدء بث قناة الأحمدية</p>
+        <p>اضغط لبدء البث المباشر</p>
     </div>
 
     <div id="tv-container">
-        <img src="https://via.placeholder.com/150x150.png?text=LOGO" class="brand-logo" alt="قناة الأحمدية">
-        
-        <div class="live-badge"><div class="live-dot"></div> مباشر</div>
-        
+        <div class="channel-logo-text">
+            <span class="logo-top">قناة</span>
+            <span class="logo-bottom">الأحمدية</span>
+        </div>
+
         <div id="interaction-blocker"></div>
         <div id="youtube-player" class="player-layer"></div>
         <video id="native-player" class="player-layer" playsinline></video>
-        <div id="iframe-container" class="player-layer" style="z-index: 1;">
-            <iframe id="generic-frame" class="generic-embed" allow="autoplay; encrypted-media" allowfullscreen></iframe>
-        </div>
-
-        <div class="ticker-wrap">
-            <div class="ticker-content" id="ticker-text">جارٍ الاتصال...</div>
-        </div>
+        <div class="ticker-wrap"><div class="ticker-content" id="ticker-text">جارٍ الاتصال بالقناة...</div></div>
     </div>
-    
-    <script id="_wau123">var _wau = _wau || []; _wau.push(["classic", "ahmadiatv", "123"]);</script>
-    <script async src="//waust.at/c.js"></script>
 
-    <script>
-        const BIN_ID = '69a607f443b1c97be9ad21cb'; 
-        const API_KEY = ''; // اتركها فارغة إذا كان public
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js";
 
-        let playlist = [];
-        let currentIndex = 0;
+        const firebaseConfig = {
+            apiKey: "AIzaSyBxqN1tGzv6bY95FtrbhmUxYucucJ_4veY",
+            authDomain: "ahmdiya-f99f2.firebaseapp.com",
+            databaseURL: "https://ahmdiya-f99f2-default-rtdb.firebaseio.com",
+            projectId: "ahmdiya-f99f2",
+            storageBucket: "ahmdiya-f99f2.firebasestorage.app",
+            messagingSenderId: "831329583457",
+            appId: "1:831329583457:web:acbf686be2c624b4780520",
+            measurementId: "G-73QPC6RXM3"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        // متغيرات النظام
         let ytPlayer;
         let isStarted = false;
-        let lastUrgentId = null; // لتتبع التغييرات العاجلة
-
+        let currentBroadcast = null;
+        
         const nativePlayer = document.getElementById('native-player');
-        const iframeContainer = document.getElementById('iframe-container');
-        const genericFrame = document.getElementById('generic-frame');
         const ytContainer = document.getElementById('youtube-player');
         const tickerEl = document.getElementById('ticker-text');
+        const overlay = document.getElementById('start-overlay');
 
-        // نظام التحقق الدوري (كل 5 ثواني)
-        setInterval(checkForUpdates, 5000);
+        // زر البدء
+        overlay.addEventListener('click', () => {
+            overlay.style.display = 'none';
+            isStarted = true;
+            if(currentBroadcast) syncAndPlay(currentBroadcast);
+        });
 
-        async function checkForUpdates() {
-            if (!isStarted) return;
-            try {
-                const headers = API_KEY ? { 'X-Master-Key': API_KEY } : {};
-                const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, { headers });
-                const json = await res.json();
-                const data = json.record;
+        // 1. الاستماع لقاعدة البيانات (Realtime)
+        const broadcastRef = ref(db, 'channel_status');
+        onValue(broadcastRef, (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                // تحديث الشريط
+                if(data.ticker) tickerEl.innerText = data.ticker;
+                
+                // حفظ بيانات البث الحالية
+                currentBroadcast = data;
 
-                // 1. تحديث الشريط الإخباري فوراً
-                if (data.ticker && tickerEl.innerText !== data.ticker) {
-                    tickerEl.innerText = data.ticker;
+                // إذا كان المستخدم قد ضغط "بدء"، نفذ التزامن فوراً
+                if(isStarted) {
+                    syncAndPlay(data);
                 }
+            }
+        });
 
-                // 2. تحديث القائمة بصمت (لتعمل عند انتهاء الفيديو الحالي)
-                playlist = data.playlist || [];
+        // 2. منطق التزامن والتشغيل (القلب النابض)
+        function syncAndPlay(data) {
+            // إخفاء الجميع
+            hideAll();
 
-                // 3. التحقق من "قطع البث" (Urgent Mode)
-                if (data.urgent && data.urgent.active === true) {
-                    // إذا كان هناك أمر عاجل جديد لم يتم تشغيله بعد
-                    if (lastUrgentId !== data.urgent.timestamp) {
-                        console.log("🚨 أمر قطع بث عاجل!");
-                        lastUrgentId = data.urgent.timestamp;
-                        // إيقاف كل شيء وتشغيل العاجل فوراً
-                        forcePlay({
-                            type: data.urgent.type,
-                            url: data.urgent.url,
-                            id: data.urgent.url, // في حالة يوتيوب
-                            title: "بث عاجل"
-                        });
+            // حساب وقت القفز (كم ثانية مرت منذ بدء البث؟)
+            const now = Date.now();
+            const startTime = data.startTime || now;
+            const elapsedSeconds = (now - startTime) / 1000;
+
+            console.log("Time Sync: Elapsed Seconds =", elapsedSeconds);
+
+            if (data.type === 'youtube') {
+                playYouTube(data.url, elapsedSeconds);
+            } else if (data.type === 'direct') {
+                playDirect(data.url, elapsedSeconds);
+            }
+        }
+
+        function hideAll() {
+            ytContainer.style.display = 'none';
+            if(ytPlayer && ytPlayer.stopVideo) ytPlayer.stopVideo();
+            nativePlayer.style.display = 'none';
+            nativePlayer.pause();
+        }
+
+        // --- مشغل يوتيوب ---
+        window.onYouTubeIframeAPIReady = function() {
+            ytPlayer = new YT.Player('youtube-player', {
+                height: '100%', width: '100%',
+                playerVars: { 'playsinline': 1, 'controls': 0, 'rel': 0, 'autoplay': 1 },
+                events: { 
+                    'onReady': () => {
+                        // إذا وصلت البيانات قبل تحميل المشغل
+                        if(isStarted && currentBroadcast && currentBroadcast.type === 'youtube') {
+                            syncAndPlay(currentBroadcast);
+                        }
                     }
                 }
+            });
+        };
 
-            } catch (e) { console.error("Update check failed", e); }
+        function playYouTube(videoId, seekToSec) {
+            ytContainer.style.display = 'block';
+            if (ytPlayer && ytPlayer.loadVideoById) {
+                // للبث المباشر (Live) لا نحتاج Seek
+                // للفيديو المسجل نحتاج Seek
+                ytPlayer.loadVideoById(videoId, seekToSec);
+                ytPlayer.playVideo();
+            }
         }
 
-        async function startBroadcast() {
-            document.getElementById('start-overlay').style.display = 'none';
-            isStarted = true;
-            // التحقق الأول
-            await checkForUpdates();
-            if (playlist.length > 0) playItem(0);
+        // --- مشغل الفيديو المباشر ---
+        function playDirect(url, seekToSec) {
+            nativePlayer.style.display = 'block';
+            
+            // إذا كان بث مباشر HLS (.m3u8) عادة لا نقفز، هو يعمل على "الآن"
+            // أما إذا كان MP4 عادي، نقفز للوقت المحدد
+            
+            if (Hls.isSupported() && url.includes('.m3u8')) {
+                const hls = new Hls();
+                hls.loadSource(url);
+                hls.attachMedia(nativePlayer);
+                hls.on(Hls.Events.MANIFEST_PARSED, () => nativePlayer.play());
+            } else {
+                nativePlayer.src = url;
+                nativePlayer.currentTime = seekToSec; // القفز للحظة الحالية
+                nativePlayer.play();
+                
+                // التأكد من التزامن كل فترة (اختياري)
+                // إذا انحرف الوقت بأكثر من 5 ثواني نعيد ضبطه
+                nativePlayer.ontimeupdate = () => {
+                    const freshNow = Date.now();
+                    const freshElapsed = (freshNow - currentBroadcast.startTime) / 1000;
+                    if (Math.abs(nativePlayer.currentTime - freshElapsed) > 10) {
+                        console.log("Resyncing video...");
+                        nativePlayer.currentTime = freshElapsed;
+                    }
+                };
+            }
         }
 
-        // --- دوال التشغيل ---
-        function forcePlay(item) {
-            // دالة لتشغيل مقطع فوراً وتجاهل الدور
-            hideAllPlayers();
-            playType(item);
-        }
-
-        function playItem(index) {
-            if (!isStarted || playlist.length === 0) return;
-            if (index >= playlist.length) currentIndex = 0;
-            else currentIndex = index;
-            const item = playlist[currentIndex];
-            hideAllPlayers();
-            playType(item);
-        }
-
-        function playType(item) {
-            console.log("Playing:", item.title);
-            if (item.type === 'youtube') playYouTube(item.id || item.url);
-            else if (item.type === 'direct') playDirect(item.url);
-            else if (item.type === 'embed') playEmbed(item.url);
-        }
-
-        function hideAllPlayers() {
-            if(ytPlayer && ytPlayer.stopVideo) { ytPlayer.stopVideo(); ytContainer.style.display='none'; }
-            nativePlayer.pause(); nativePlayer.style.display='none';
-            iframeContainer.style.display='none'; genericFrame.src = "";
-        }
-
-        // --- YouTube API ---
+        // تحميل YouTube API
         var tag = document.createElement('script');
         tag.src = "https://www.youtube.com/iframe_api";
         var firstScriptTag = document.getElementsByTagName('script')[0];
         firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-
-        function onYouTubeIframeAPIReady() {
-            ytPlayer = new YT.Player('youtube-player', {
-                height: '100%', width: '100%',
-                playerVars: { 'playsinline': 1, 'controls': 0, 'rel': 0, 'autoplay': 1, 'origin': window.location.origin },
-                events: { 'onStateChange': onPlayerStateChange }
-            });
-        }
-        function onPlayerStateChange(event) {
-            if (event.data === YT.PlayerState.ENDED) playItem(currentIndex + 1);
-        }
-        function playYouTube(id) {
-            ytContainer.style.display = 'block';
-            if (ytPlayer && ytPlayer.loadVideoById) { ytPlayer.loadVideoById(id); ytPlayer.playVideo(); }
-        }
-
-        // --- Direct Player ---
-        function playDirect(url) {
-            nativePlayer.style.display = 'block';
-            if (Hls.isSupported() && url.endsWith('.m3u8')) {
-                const hls = new Hls(); hls.loadSource(url); hls.attachMedia(nativePlayer);
-                hls.on(Hls.Events.MANIFEST_PARSED, () => nativePlayer.play());
-            } else { nativePlayer.src = url; nativePlayer.play(); }
-        }
-        nativePlayer.onended = () => playItem(currentIndex + 1);
-
-        // --- Embed ---
-        function playEmbed(url) {
-            iframeContainer.style.display = 'block'; genericFrame.src = url;
-        }
     </script>
 </body>
 </html>
