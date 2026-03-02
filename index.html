@@ -8,64 +8,438 @@
     <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@700&family=Cairo:wght@900&display=swap" rel="stylesheet">
     
     <style>
-        :root { --main-color: #c0392b; --bg-color: #000; --ticker-duration: 25s; }
-        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background-color: var(--bg-color); font-family: 'Cairo', sans-serif; overflow: hidden; }
-        #tv-container { position: relative; width: 100vw; height: 100vh; background: #000; overflow: hidden; }
+        :root {
+            --main-color: #c0392b;
+            --secondary-color: #f39c12;
+            --bg-color: #0a0a0a;
+            --ticker-duration: 25s;
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body, html {
+            width: 100%;
+            height: 100%;
+            background-color: var(--bg-color);
+            font-family: 'Cairo', sans-serif;
+            overflow: hidden;
+        }
+        
+        #tv-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #0a0a0a 100%);
+            overflow: hidden;
+        }
+
+        /* خلفية متحركة */
+        .bg-animation {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+        
+        .bg-animation::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at center, rgba(192, 57, 43, 0.1) 0%, transparent 50%);
+            animation: rotateBg 30s linear infinite;
+        }
 
         /* اللوجو */
-        .pro-logo-container { position: absolute; top: 30px; right: 30px; z-index: 200; text-align: center; pointer-events: none; filter: drop-shadow(0 5px 15px rgba(0,0,0,0.8)); animation: floatLogo 4s ease-in-out infinite; }
-        .logo-top { display: block; font-family: 'Amiri', serif; font-size: 1.2rem; color: #fff; text-shadow: 0 0 5px rgba(255,255,255,0.5); }
-        .logo-bottom { display: block; font-size: 2.8rem; font-weight: 900; line-height: 1; background: linear-gradient(45deg, #bf953f, #fcf6ba, #b38728, #fbf5b7, #aa771c); -webkit-background-clip: text; color: transparent; background-size: 200% auto; animation: shine 3s linear infinite; }
+        .pro-logo-container {
+            position: absolute;
+            top: 25px;
+            right: 25px;
+            z-index: 200;
+            text-align: center;
+            pointer-events: none;
+            filter: drop-shadow(0 5px 20px rgba(0,0,0,0.9));
+            animation: floatLogo 4s ease-in-out infinite;
+        }
+        
+        .logo-top {
+            display: block;
+            font-family: 'Amiri', serif;
+            font-size: 1rem;
+            color: #fff;
+            text-shadow: 0 0 10px rgba(255,255,255,0.3);
+            letter-spacing: 2px;
+        }
+        
+        .logo-bottom {
+            display: block;
+            font-size: 2.5rem;
+            font-weight: 900;
+            line-height: 1;
+            background: linear-gradient(135deg, #bf953f, #fcf6ba, #b38728, #fbf5b7, #aa771c);
+            -webkit-background-clip: text;
+            color: transparent;
+            background-size: 300% 300%;
+            animation: shine 4s ease-in-out infinite;
+        }
+
+        /* عداد المشاهدين */
+        .viewers-counter {
+            position: absolute;
+            top: 25px;
+            left: 25px;
+            z-index: 200;
+            background: linear-gradient(135deg, rgba(192, 57, 43, 0.9), rgba(192, 57, 43, 0.7));
+            padding: 8px 18px;
+            border-radius: 30px;
+            color: white;
+            font-size: 0.9rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 15px rgba(192, 57, 43, 0.4);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .viewers-counter::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            background: #2ecc71;
+            border-radius: 50%;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        /* الإعلان الجانبي */
+        .side-ad {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 150;
+            background: rgba(0,0,0,0.8);
+            border: 2px solid var(--secondary-color);
+            border-radius: 10px;
+            overflow: hidden;
+            display: none;
+            box-shadow: 0 0 30px rgba(243, 156, 18, 0.3);
+        }
+        
+        .side-ad.right {
+            right: 15px;
+            width: 180px;
+        }
+        
+        .side-ad.left {
+            left: 15px;
+            width: 180px;
+        }
+        
+        .side-ad img {
+            width: 100%;
+            display: block;
+        }
+        
+        .side-ad .ad-label {
+            background: var(--secondary-color);
+            color: #000;
+            font-size: 0.7rem;
+            padding: 3px;
+            text-align: center;
+            font-weight: bold;
+        }
 
         /* الراعي */
-        .sponsor-box { position: absolute; top: 30px; left: 30px; z-index: 200; background: rgba(255, 255, 255, 0.9); padding: 5px 10px; border-radius: 8px; box-shadow: 0 0 20px rgba(0,0,0,0.5); display: none; text-align: center; }
-        .sponsor-box img { max-height: 60px; max-width: 150px; display: block; }
+        .sponsor-box {
+            position: absolute;
+            top: 80px;
+            left: 25px;
+            z-index: 200;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 8px 15px;
+            border-radius: 10px;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.5);
+            display: none;
+            text-align: center;
+        }
+        
+        .sponsor-box span {
+            display: block;
+            font-size: 0.7rem;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        
+        .sponsor-box img {
+            max-height: 50px;
+            max-width: 120px;
+            display: block;
+        }
 
         /* المشغلات */
-        .player-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none; }
-        #youtube-player, iframe { width: 100% !important; height: 100% !important; border: none; display: block; }
-        video { width: 100%; height: 100%; object-fit: contain; background: #000; }
-        #interaction-blocker { position: absolute; top: 0; left: 0; width: 100%; height: 85%; z-index: 50; background: transparent; }
+        .player-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+            z-index: 10;
+        }
         
-        /* الشريط */
-        .ticker-wrap { position: absolute; bottom: 0; left: 0; width: 100%; height: 50px; background: rgba(192, 57, 43, 0.95); z-index: 100; border-top: 3px solid #f1c40f; overflow: hidden; display: flex; align-items: center; }
-        .ticker-content { white-space: nowrap; padding-left: 100%; animation: ticker var(--ticker-duration) linear infinite; color: white; font-size: 1.4rem; font-weight: bold; text-shadow: 1px 1px 2px black; }
+        #youtube-player,
+        iframe {
+            width: 100% !important;
+            height: 100% !important;
+            border: none;
+            display: block;
+        }
+        
+        video {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            background: #000;
+        }
+
+        /* طبقة الصورة مع الصوت */
+        .image-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+            z-index: 10;
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-color: #000;
+        }
+
+        #interaction-blocker {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 90%;
+            z-index: 50;
+            background: transparent;
+        }
+
+        /* الشريط الإخباري */
+        .ticker-wrap {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 50px;
+            background: linear-gradient(90deg, rgba(192, 57, 43, 0.98), rgba(192, 57, 43, 0.95));
+            z-index: 100;
+            border-top: 3px solid var(--secondary-color);
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+        }
+        
+        .ticker-content {
+            white-space: nowrap;
+            padding-left: 100%;
+            animation: ticker var(--ticker-duration) linear infinite;
+            color: white;
+            font-size: 1.2rem;
+            font-weight: bold;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+        }
 
         /* شاشة البدء */
-        #start-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; color: white; cursor: pointer; }
-        .play-btn { font-size: 50px; border: 2px solid white; border-radius: 50%; width: 80px; height: 80px; display: flex; justify-content: center; align-items: center; transition: 0.3s; margin-bottom: 20px; }
-        #start-overlay:hover .play-btn { background: var(--main-color); border-color: var(--main-color); }
+        #start-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            cursor: pointer;
+        }
+        
+        .start-logo {
+            transform: scale(2);
+            margin-bottom: 40px;
+        }
+        
+        .play-btn {
+            font-size: 40px;
+            border: 3px solid var(--main-color);
+            border-radius: 50%;
+            width: 100px;
+            height: 100px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+            background: transparent;
+            color: var(--main-color);
+        }
+        
+        #start-overlay:hover .play-btn {
+            background: var(--main-color);
+            border-color: var(--main-color);
+            color: white;
+            transform: scale(1.1);
+            box-shadow: 0 0 40px rgba(192, 57, 43, 0.5);
+        }
 
-        @keyframes ticker { 0% {transform: translate3d(0,0,0);} 100% {transform: translate3d(100%,0,0);} }
-        @keyframes shine { to { background-position: 200% center; } }
-        @keyframes floatLogo { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+        /* حالة عدم وجود بث */
+        #offline-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 5;
+            color: white;
+        }
+        
+        .offline-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+        
+        .offline-text {
+            font-size: 1.5rem;
+            opacity: 0.7;
+        }
+
+        /* الآن يعرض */
+        .now-playing {
+            position: absolute;
+            bottom: 60px;
+            right: 20px;
+            background: rgba(0,0,0,0.8);
+            padding: 10px 20px;
+            border-radius: 8px;
+            color: white;
+            z-index: 120;
+            font-size: 0.9rem;
+            border-right: 3px solid var(--main-color);
+            display: none;
+        }
+
+        @keyframes ticker {
+            0% { transform: translate3d(0, 0, 0); }
+            100% { transform: translate3d(-100%, 0, 0); }
+        }
+        
+        @keyframes shine {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+        
+        @keyframes floatLogo {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+        
+        @keyframes rotateBg {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.2); }
+        }
+
+        @media (max-width: 768px) {
+            .logo-bottom { font-size: 1.8rem; }
+            .logo-top { font-size: 0.8rem; }
+            .side-ad { display: none !important; }
+            .ticker-content { font-size: 1rem; }
+            .viewers-counter { font-size: 0.8rem; padding: 6px 12px; }
+        }
     </style>
 </head>
 <body>
 
     <div id="start-overlay">
-        <div class="pro-logo-container" style="position:static; margin-bottom:30px; transform: scale(1.5);">
+        <div class="pro-logo-container start-logo">
             <span class="logo-top">قناة</span>
             <span class="logo-bottom">الأحمدية</span>
         </div>
         <div class="play-btn">▶</div>
-        <p>اضغط لبدء البث المباشر</p>
+        <p style="opacity: 0.7;">اضغط لبدء المشاهدة</p>
     </div>
 
     <div id="tv-container">
-        <div class="pro-logo-container"><span class="logo-top">قناة</span><span class="logo-bottom">الأحمدية</span></div>
-        <div id="sponsor-container" class="sponsor-box"><span>برعاية</span><img id="sponsor-img" src="" alt="Sponsor"></div>
+        <div class="bg-animation"></div>
+        
+        <div class="pro-logo-container">
+            <span class="logo-top">قناة</span>
+            <span class="logo-bottom">الأحمدية</span>
+        </div>
+        
+        <div class="viewers-counter">
+            <span id="viewers-count">0</span> مشاهد
+        </div>
+        
+        <div id="sponsor-container" class="sponsor-box">
+            <span>برعاية</span>
+            <img id="sponsor-img" src="" alt="Sponsor">
+        </div>
+        
+        <!-- الإعلانات الجانبية -->
+        <div id="side-ad-right" class="side-ad right">
+            <div class="ad-label">إعلان</div>
+            <img id="side-ad-right-img" src="" alt="Ad">
+        </div>
+        <div id="side-ad-left" class="side-ad left">
+            <div class="ad-label">إعلان</div>
+            <img id="side-ad-left-img" src="" alt="Ad">
+        </div>
+        
         <div id="interaction-blocker"></div>
         
+        <!-- طبقات المشغلات -->
         <div id="youtube-player" class="player-layer"></div>
         <video id="native-player" class="player-layer" playsinline></video>
+        <div id="image-layer" class="image-layer"></div>
+        <audio id="audio-player" style="display:none;"></audio>
         
-        <div class="ticker-wrap"><div class="ticker-content" id="ticker-text">جارٍ الاتصال...</div></div>
+        <div id="offline-screen">
+            <div class="offline-icon">📡</div>
+            <div class="offline-text">في انتظار بدء البث...</div>
+        </div>
+        
+        <div id="now-playing" class="now-playing">
+            <strong>الآن:</strong> <span id="now-title">-</span>
+        </div>
+        
+        <div class="ticker-wrap">
+            <div class="ticker-content" id="ticker-text">أهلاً بكم في قناة الأحمدية</div>
+        </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js";
+        import { getDatabase, ref, onValue, set, onDisconnect, remove } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyBxqN1tGzv6bY95FtrbhmUxYucucJ_4veY",
@@ -81,21 +455,48 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        let ytPlayer;
+        let ytPlayer = null;
         let isStarted = false;
         let currentData = null;
         let checkInterval = null;
-        let lastPlayedId = null; // لمنع إعادة تحميل نفس الفيديو
+        let lastPlayedId = null;
+        let viewerId = 'viewer_' + Math.random().toString(36).substr(2, 9);
 
         const nativePlayer = document.getElementById('native-player');
+        const audioPlayer = document.getElementById('audio-player');
+        const imageLayer = document.getElementById('image-layer');
         const ytContainer = document.getElementById('youtube-player');
         const tickerEl = document.getElementById('ticker-text');
         const overlay = document.getElementById('start-overlay');
         const root = document.documentElement;
+        const viewersCountEl = document.getElementById('viewers-count');
+
+        // تسجيل المشاهد
+        function registerViewer() {
+            const viewerRef = ref(db, `viewers/${viewerId}`);
+            set(viewerRef, {
+                joinedAt: Date.now(),
+                page: 'channel'
+            });
+            
+            // إزالة المشاهد عند مغادرة الصفحة
+            onDisconnect(viewerRef).remove();
+        }
+
+        // تحديث عدد المشاهدين
+        onValue(ref(db, 'viewers'), (snapshot) => {
+            const data = snapshot.val();
+            const count = data ? Object.keys(data).length : 0;
+            viewersCountEl.textContent = count;
+        });
 
         overlay.addEventListener('click', () => {
-            overlay.style.display = 'none';
+            overlay.style.opacity = '0';
+            setTimeout(() => {
+                overlay.style.display = 'none';
+            }, 300);
             isStarted = true;
+            registerViewer();
             if(currentData) startScheduler(currentData);
         });
 
@@ -103,10 +504,11 @@
         onValue(ref(db, 'channel_status'), (snapshot) => {
             const data = snapshot.val();
             if (data) {
-                // تحديث العناصر الجانبية
+                // تحديث الشريط
                 if(data.tickerText) tickerEl.innerText = data.tickerText;
                 if(data.tickerSpeed) root.style.setProperty('--ticker-duration', data.tickerSpeed + 's');
                 
+                // الراعي
                 const sponsorBox = document.getElementById('sponsor-container');
                 if(data.sponsor && data.sponsor.show) {
                     sponsorBox.style.display = 'block';
@@ -114,51 +516,76 @@
                 } else {
                     sponsorBox.style.display = 'none';
                 }
-
+                
+                // الإعلانات الجانبية
+                updateSideAds(data.sideAds);
+                
                 currentData = data;
                 if(isStarted) startScheduler(data);
+            } else {
+                showOffline();
             }
         });
 
-        // --- المايسترو (Scheduler) ---
-        // هذه الدالة تعمل كل ثانية لحساب "ماذا يجب أن نعرض الآن؟"
+        function updateSideAds(ads) {
+            const rightAd = document.getElementById('side-ad-right');
+            const leftAd = document.getElementById('side-ad-left');
+            
+            if(ads && ads.right && ads.right.show) {
+                rightAd.style.display = 'block';
+                document.getElementById('side-ad-right-img').src = ads.right.url;
+            } else {
+                rightAd.style.display = 'none';
+            }
+            
+            if(ads && ads.left && ads.left.show) {
+                leftAd.style.display = 'block';
+                document.getElementById('side-ad-left-img').src = ads.left.url;
+            } else {
+                leftAd.style.display = 'none';
+            }
+        }
+
+        function showOffline() {
+            document.getElementById('offline-screen').style.display = 'flex';
+            hideAll();
+        }
+
         function startScheduler(data) {
             if(checkInterval) clearInterval(checkInterval);
-            
-            // تشغيل مرة واحدة فوراً
             calculateAndPlay(data);
-
-            // ثم التحقق كل ثانية للتنقل التلقائي
             checkInterval = setInterval(() => {
                 calculateAndPlay(data);
             }, 1000);
         }
 
         function calculateAndPlay(data) {
-            if(!data.playlist || !data.playlistStartTime) return;
+            if(!data.playlist || !data.playlistStartTime) {
+                showOffline();
+                return;
+            }
 
-            const now = Date.now();
-            const timeElapsedTotal = (now - data.playlistStartTime) / 1000; // الثواني المنقضية منذ بدء القائمة
-
-            // 1. حساب مدة القائمة كاملة
-            let totalDuration = 0;
-            data.playlist.forEach(item => totalDuration += parseInt(item.duration));
+            document.getElementById('offline-screen').style.display = 'none';
             
-            // 2. تحديد موقعنا في التكرار (Loop)
-            // المودولو (%) يجعل القائمة تعيد نفسها تلقائياً
+            const now = Date.now();
+            const timeElapsedTotal = (now - data.playlistStartTime) / 1000;
+
+            let totalDuration = 0;
+            data.playlist.forEach(item => totalDuration += parseInt(item.duration) || 0);
+            
+            if(totalDuration === 0) return;
+            
             let currentLoopTime = timeElapsedTotal % totalDuration;
 
-            // 3. البحث عن الفيديو الحالي
             let timeCursor = 0;
             let foundVideo = null;
             let seekTime = 0;
 
             for (let item of data.playlist) {
-                const itemDuration = parseInt(item.duration);
-                // هل الوقت الحالي يقع داخل هذا الفيديو؟
+                const itemDuration = parseInt(item.duration) || 0;
                 if (currentLoopTime >= timeCursor && currentLoopTime < (timeCursor + itemDuration)) {
                     foundVideo = item;
-                    seekTime = currentLoopTime - timeCursor; // كم ثانية مضت من هذا الفيديو
+                    seekTime = currentLoopTime - timeCursor;
                     break;
                 }
                 timeCursor += itemDuration;
@@ -170,26 +597,49 @@
         }
 
         function playSyncedVideo(video, seekTime) {
-            // إذا كان الفيديو هو نفسه الذي يعمل حالياً، فقط نتأكد من التزامن
-            if (lastPlayedId === video.id || lastPlayedId === video.url) {
-                // تصحيح الوقت إذا انحرف (لليوتيوب والفيديو العادي)
-                if (video.type === 'direct' && Math.abs(nativePlayer.currentTime - seekTime) > 5) {
-                    console.log("Resyncing Direct Video...");
-                    nativePlayer.currentTime = seekTime;
+            const videoKey = video.id || video.url || video.image;
+            
+            if (lastPlayedId === videoKey) {
+                // تصحيح التزامن
+                if (video.type === 'direct' || video.type === 'audio-image') {
+                    const player = video.type === 'audio-image' ? audioPlayer : nativePlayer;
+                    if (Math.abs(player.currentTime - seekTime) > 3) {
+                        player.currentTime = seekTime;
+                    }
                 }
-                // تصحيح يوتيوب صعب قليلاً لانه قد يعيد التحميل، لذا نتركه لليوتيوب إلا إذا كان الفرق كبيراً جداً
                 return; 
             }
 
-            // فيديو جديد!
-            console.log("Switching to:", video.title, "at", seekTime);
-            lastPlayedId = video.id || video.url;
+            console.log("Switching to:", video.title, "Type:", video.type);
+            lastPlayedId = videoKey;
+            
+            // تحديث "الآن يعرض"
+            document.getElementById('now-playing').style.display = 'block';
+            document.getElementById('now-title').textContent = video.title || 'بدون عنوان';
+            
             hideAll();
 
-            if (video.type === 'youtube') {
-                playYouTube(video.id, seekTime);
-            } else if (video.type === 'direct') {
-                playDirect(video.url, seekTime);
+            switch(video.type) {
+                case 'youtube':
+                    playYouTube(video.id, seekTime);
+                    break;
+                case 'tiktok':
+                    playTikTok(video.url);
+                    break;
+                case 'facebook':
+                    playFacebook(video.url);
+                    break;
+                case 'direct':
+                    playDirect(video.url, seekTime);
+                    break;
+                case 'audio-image':
+                    playAudioWithImage(video.image, video.audio, seekTime);
+                    break;
+                case 'image':
+                    showImage(video.image, video.duration);
+                    break;
+                default:
+                    playDirect(video.url, seekTime);
             }
         }
 
@@ -198,39 +648,114 @@
             if(ytPlayer && ytPlayer.stopVideo) ytPlayer.stopVideo();
             nativePlayer.style.display = 'none';
             nativePlayer.pause();
+            imageLayer.style.display = 'none';
+            audioPlayer.pause();
+            imageLayer.innerHTML = '';
         }
 
-        // --- المشغلات ---
+        // --- YouTube ---
         window.onYouTubeIframeAPIReady = function() {
             ytPlayer = new YT.Player('youtube-player', {
-                height: '100%', width: '100%',
-                playerVars: { 'playsinline': 1, 'controls': 0, 'rel': 0, 'autoplay': 1 },
-                events: { 'onReady': () => { if(isStarted && currentData) startScheduler(currentData); } }
+                height: '100%',
+                width: '100%',
+                playerVars: {
+                    'playsinline': 1,
+                    'controls': 0,
+                    'rel': 0,
+                    'autoplay': 1,
+                    'modestbranding': 1
+                },
+                events: {
+                    'onReady': () => {
+                        if(isStarted && currentData) startScheduler(currentData);
+                    }
+                }
             });
         };
 
         function playYouTube(id, startSeconds) {
             ytContainer.style.display = 'block';
             if (ytPlayer && ytPlayer.loadVideoById) {
-                ytPlayer.loadVideoById({videoId: id, startSeconds: startSeconds});
+                ytPlayer.loadVideoById({
+                    videoId: id,
+                    startSeconds: startSeconds
+                });
                 ytPlayer.playVideo();
             }
         }
 
+        // --- TikTok ---
+        function playTikTok(url) {
+            ytContainer.style.display = 'block';
+            ytContainer.innerHTML = `
+                <iframe 
+                    src="${url}" 
+                    width="100%" 
+                    height="100%" 
+                    scrolling="no" 
+                    allow="autoplay; encrypted-media" 
+                    allowfullscreen
+                    style="border:none;">
+                </iframe>
+            `;
+        }
+
+        // --- Facebook ---
+        function playFacebook(url) {
+            ytContainer.style.display = 'block';
+            ytContainer.innerHTML = `
+                <iframe 
+                    src="https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(url)}&show_text=0&autoplay=1" 
+                    width="100%" 
+                    height="100%" 
+                    scrolling="no" 
+                    frameborder="0" 
+                    allowfullscreen="true" 
+                    allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share">
+                </iframe>
+            `;
+        }
+
+        // --- Direct Video/Audio ---
         function playDirect(url, startSeconds) {
             nativePlayer.style.display = 'block';
+            
             if (Hls.isSupported() && url.includes('.m3u8')) {
-                const hls = new Hls(); hls.loadSource(url); hls.attachMedia(nativePlayer);
-                hls.on(Hls.Events.MANIFEST_PARSED, () => nativePlayer.play());
+                const hls = new Hls();
+                hls.loadSource(url);
+                hls.attachMedia(nativePlayer);
+                hls.on(Hls.Events.MANIFEST_PARSED, () => {
+                    nativePlayer.currentTime = startSeconds;
+                    nativePlayer.play();
+                });
             } else {
                 nativePlayer.src = url;
                 nativePlayer.currentTime = startSeconds;
-                nativePlayer.play();
+                nativePlayer.play().catch(e => console.log('Autoplay blocked'));
             }
         }
 
-        var tag = document.createElement('script'); tag.src = "https://www.youtube.com/iframe_api";
-        var firstScriptTag = document.getElementsByTagName('script')[0]; firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+        // --- Image with Audio ---
+        function playAudioWithImage(imageUrl, audioUrl, startSeconds) {
+            imageLayer.style.display = 'block';
+            imageLayer.style.backgroundImage = `url(${imageUrl})`;
+            
+            audioPlayer.src = audioUrl;
+            audioPlayer.currentTime = startSeconds;
+            audioPlayer.play().catch(e => console.log('Audio autoplay blocked'));
+        }
+
+        // --- Image Only ---
+        function showImage(imageUrl, duration) {
+            imageLayer.style.display = 'block';
+            imageLayer.style.backgroundImage = `url(${imageUrl})`;
+        }
+
+        // Load YouTube API
+        var tag = document.createElement('script');
+        tag.src = "https://www.youtube.com/iframe_api";
+        var firstScriptTag = document.getElementsByTagName('script')[0];
+        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
     </script>
 </body>
 </html>
