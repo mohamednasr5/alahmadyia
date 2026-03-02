@@ -13,7 +13,6 @@
             --secondary-color: #f39c12;
             --bg-color: #0a0a0a;
             --ticker-duration: 30s;
-            --ticker-direction: normal;
         }
         
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -362,24 +361,6 @@
             backdrop-filter: blur(5px);
         }
 
-        /* مؤشر البث الطارئ */
-        .instant-indicator {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: linear-gradient(135deg, rgba(192, 57, 43, 0.95), rgba(231, 76, 60, 0.95));
-            padding: 20px 40px;
-            border-radius: 15px;
-            color: white;
-            font-size: 1.5rem;
-            font-weight: bold;
-            z-index: 1000;
-            display: none;
-            animation: pulseIndicator 1s ease-in-out infinite;
-            box-shadow: 0 0 50px rgba(192, 57, 43, 0.8);
-        }
-
         @keyframes tickerRTL {
             0% { transform: translateX(0); }
             100% { transform: translateX(-100%); }
@@ -403,11 +384,6 @@
         @keyframes pulseLive {
             0%, 100% { opacity: 1; transform: scale(1); }
             50% { opacity: 0.6; transform: scale(1.3); }
-        }
-        
-        @keyframes pulseIndicator {
-            0%, 100% { transform: translate(-50%, -50%) scale(1); }
-            50% { transform: translate(-50%, -50%) scale(1.05); }
         }
 
         @media (max-width: 768px) {
@@ -476,9 +452,7 @@
             <strong>الآن:</strong> <span id="now-title">-</span>
         </div>
         
-        <div id="instant-indicator" class="instant-indicator">
-            بث خاص
-        </div>
+        <!-- تم حذف مؤشر البث الخاص حسب الطلب -->
         
         <div class="ticker-wrap">
             <div class="ticker-content" id="ticker-text">أهلاً بكم في قناة الأحمدية</div>
@@ -550,7 +524,7 @@
             if (data) {
                 currentData = data;
                 
-                // تحديث الشريط
+                // تحديث الشريط (منفصل عن الفيديو)
                 if(data.tickerText) tickerEl.innerText = data.tickerText;
                 if(data.tickerSpeed) root.style.setProperty('--ticker-duration', data.tickerSpeed + 's');
                 
@@ -606,7 +580,7 @@
             // إيقاف البث الفوري إذا كان يعمل
             if(isPlayingInstant) {
                 isPlayingInstant = false;
-                document.getElementById('instant-indicator').style.display = 'none';
+                // تم حذف إخفاء المؤشر لأننا حذفناه من التصميم
                 lastPlayedId = null;
             }
             
@@ -618,7 +592,7 @@
             }
         }
 
-        // البث الفوري
+        // البث الفوري (بدون نص "بث خاص")
         function playInstantContent(instantData) {
             if(isPlayingInstant && lastPlayedId === instantData.url) return;
             
@@ -626,8 +600,7 @@
             lastPlayedId = instantData.url;
             
             document.getElementById('offline-screen').style.display = 'none';
-            document.getElementById('instant-indicator').style.display = 'block';
-            document.getElementById('instant-indicator').textContent = instantData.title || 'بث خاص';
+            // تم حذف السطر الذي يظهر "بث خاص"
             
             hideAll();
             
@@ -658,10 +631,11 @@
             document.getElementById('offline-screen').style.display = 'none';
             calculateAndPlay(data);
             
+            // التحقق من التزامن كل ثانية
             checkInterval = setInterval(() => {
-                // لا تحسب إذا كان البث الفوري يعمل
                 if(!isPlayingInstant) {
                     calculateAndPlay(data);
+                    syncCorrection();
                 }
             }, 1000);
         }
@@ -705,20 +679,45 @@
             }
         }
 
+        // دالة لتصحيح الانحراف الزمني (Sync Correction)
+        function syncCorrection() {
+            if(!currentData || !currentData.playlistStartTime) return;
+            const now = Date.now();
+            const timeElapsedTotal = (now - currentData.playlistStartTime) / 1000;
+            const totalDuration = currentData.playlist.reduce((sum, item) => sum + (parseInt(item.duration) || 0), 0);
+            const currentLoopTime = timeElapsedTotal % totalDuration;
+            
+            let timeCursor = 0;
+            let seekTime = 0;
+
+            for (let item of currentData.playlist) {
+                const itemDuration = parseInt(item.duration) || 0;
+                if (currentLoopTime >= timeCursor && currentLoopTime < (timeCursor + itemDuration)) {
+                    seekTime = currentLoopTime - timeCursor;
+                    break;
+                }
+                timeCursor += itemDuration;
+            }
+
+            // تصحيح الفيديو المباشر
+            if (nativePlayer.style.display === 'block') {
+                if (Math.abs(nativePlayer.currentTime - seekTime) > 2) {
+                    nativePlayer.currentTime = seekTime;
+                }
+            }
+            // تصحيح الصوت
+            if (audioPlayer.style.display === 'block' || imageLayer.style.display === 'block') {
+                if (Math.abs(audioPlayer.currentTime - seekTime) > 2) {
+                    audioPlayer.currentTime = seekTime;
+                }
+            }
+        }
+
         function playSyncedVideo(video, seekTime) {
             const videoKey = video.id || video.url || video.image || JSON.stringify(video);
             
             if (lastPlayedId === videoKey && !isPlayingInstant) {
-                // تصحيح التزامن
-                if (video.type === 'direct') {
-                    if (Math.abs(nativePlayer.currentTime - seekTime) > 3) {
-                        nativePlayer.currentTime = seekTime;
-                    }
-                } else if (video.type === 'audio-image') {
-                    if (Math.abs(audioPlayer.currentTime - seekTime) > 3) {
-                        audioPlayer.currentTime = seekTime;
-                    }
-                }
+                // تصحيح التزامن يتم في interval منفصل
                 return; 
             }
 
@@ -812,8 +811,6 @@
         // --- TikTok ---
         function playTikTok(url) {
             ytContainer.style.display = 'block';
-            // استخراج معرف الفيديو
-            let embedUrl = url;
             if(url.includes('tiktok.com')) {
                 ytContainer.innerHTML = `
                     <iframe 
@@ -845,14 +842,11 @@
         function playFacebook(url) {
             ytContainer.style.display = 'block';
             let embedUrl = url;
-            
-            // تحويل رابط Reels
             if(url.includes('/reel/')) {
                 embedUrl = `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(url)}&show_text=0&autoplay=1`;
             } else {
                 embedUrl = `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(url)}&show_text=0&autoplay=1`;
             }
-            
             ytContainer.innerHTML = `
                 <iframe 
                     src="${embedUrl}" 
@@ -869,7 +863,6 @@
         // --- Instagram Reels ---
         function playInstagram(url) {
             ytContainer.style.display = 'block';
-            // Instagram embed
             ytContainer.innerHTML = `
                 <iframe 
                     src="${url}/embed" 
@@ -886,7 +879,6 @@
         // --- Direct Video/Audio ---
         function playDirect(url, startSeconds) {
             nativePlayer.style.display = 'block';
-            
             if (Hls.isSupported() && url.includes('.m3u8')) {
                 const hls = new Hls();
                 hls.loadSource(url);
@@ -906,7 +898,6 @@
         function playAudioWithImage(imageUrl, audioUrl, seekTime) {
             imageLayer.style.display = 'block';
             imageLayer.style.backgroundImage = `url(${imageUrl})`;
-            
             audioPlayer.src = audioUrl;
             audioPlayer.currentTime = seekTime;
             audioPlayer.play().catch(e => console.log('Audio autoplay blocked'));
