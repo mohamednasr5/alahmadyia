@@ -2,45 +2,77 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>لوحة تحكم القناة | Firebase</title>
+    <title>مدير القوائم | قناة الأحمدية</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>body { background: #f8f9fa; padding: 20px; font-family: 'Segoe UI', sans-serif; }</style>
+    <style>
+        body { background: #f0f2f5; font-family: 'Segoe UI', sans-serif; padding: 20px; }
+        .card { border: none; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .playlist-item { background: #fff; padding: 10px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
+        .playlist-item:last-child { border-bottom: none; }
+        .duration-badge { background: #e74c3c; color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.8rem; }
+    </style>
 </head>
 <body>
 
-<div class="container" style="max-width: 600px;">
-    <h3 class="text-center mb-4">🔴 وحدة التحكم بالبث المباشر</h3>
-    
-    <div class="card p-4 shadow-sm">
-        <div class="mb-3">
-            <label>حالة الاتصال:</label>
-            <span id="status-badge" class="badge bg-secondary">جاري الاتصال...</span>
+<div class="container" style="max-width: 900px;">
+    <h2 class="text-center mb-4 text-primary">🎛️ ستوديو القوائم المتزامنة</h2>
+
+    <div class="row">
+        <div class="col-md-5">
+            <div class="card p-3 mb-3">
+                <h5 class="mb-3">1. إضافة فيديو للقائمة</h5>
+                
+                <label>نوع الفيديو:</label>
+                <select id="vid-type" class="form-select mb-2">
+                    <option value="youtube">يوتيوب (ID)</option>
+                    <option value="direct">ملف مباشر (URL)</option>
+                </select>
+
+                <label>الرابط أو المعرف:</label>
+                <input type="text" id="vid-url" class="form-control mb-2" placeholder="مثال: jfKfPfyJRdk">
+
+                <label>العنوان:</label>
+                <input type="text" id="vid-title" class="form-control mb-2" placeholder="عنوان الفيديو">
+
+                <label class="text-danger fw-bold">المدة (بالثواني) - هام جداً:</label>
+                <div class="input-group mb-3">
+                    <input type="number" id="vid-duration" class="form-control" placeholder="مثال: 300 (لـ 5 دقائق)">
+                    <span class="input-group-text">ثانية</span>
+                </div>
+
+                <button onclick="addToQueue()" class="btn btn-primary w-100">➕ إضافة للقائمة</button>
+            </div>
+
+            <div class="card p-3">
+                <h5>إعدادات إضافية</h5>
+                <input type="text" id="ticker-text" class="form-control mb-2" placeholder="نص الشريط الإخباري...">
+                <button onclick="updateSettingsOnly()" class="btn btn-warning w-100 btn-sm">تحديث الشريط فقط</button>
+            </div>
         </div>
 
-        <hr>
+        <div class="col-md-7">
+            <div class="card p-3 h-100">
+                <h5 class="mb-3">2. قائمة التشغيل الحالية (Queue)</h5>
+                
+                <div id="playlist-container" class="border rounded bg-light mb-3" style="min-height: 200px; max-height: 400px; overflow-y: auto;">
+                    <p class="text-center text-muted p-4" id="empty-msg">القائمة فارغة. أضف فيديوهات من اليمين.</p>
+                </div>
 
-        <h5 class="mb-3">ماذا تريد أن تعرض الآن؟</h5>
-        <div class="mb-3">
-            <select id="type" class="form-select mb-2">
-                <option value="youtube">يوتيوب (فيديو أو بث مباشر)</option>
-                <option value="direct">رابط مباشر (MP4 / M3U8)</option>
-            </select>
-            <input type="text" id="url" class="form-control" placeholder="معرف الفيديو (ID) أو الرابط المباشر">
-            <small class="text-muted">لليوتيوب ضع المعرف فقط (مثل: jfKfPfyJRdk)</small>
+                <div class="d-flex justify-content-between align-items-center bg-white p-2 rounded border mb-3">
+                    <strong>المدة الكلية للقائمة:</strong>
+                    <span id="total-duration" class="badge bg-dark">0 ثانية</span>
+                </div>
+
+                <button onclick="publishPlaylist()" class="btn btn-success btn-lg w-100">🚀 بدء تشغيل القائمة المتزامنة للجميع</button>
+                <small class="text-muted text-center d-block mt-2">عند الضغط، سيتم بدء القائمة من البداية عند جميع المشاهدين في نفس اللحظة.</small>
+            </div>
         </div>
-
-        <div class="mb-3">
-            <label>شريط الأخبار:</label>
-            <input type="text" id="ticker" class="form-control" placeholder="اكتب النص هنا...">
-        </div>
-
-        <button id="broadcast-btn" class="btn btn-danger w-100 btn-lg">🚀 بث الآن (مزامنة الجميع)</button>
     </div>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-    import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js";
+    import { getDatabase, ref, set, update } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyBxqN1tGzv6bY95FtrbhmUxYucucJ_4veY",
@@ -56,30 +88,100 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    // تغيير حالة الاتصال في الواجهة
-    document.getElementById('status-badge').className = "badge bg-success";
-    document.getElementById('status-badge').innerText = "متصل بـ Firebase";
+    // مصفوفة لتخزين القائمة محلياً قبل الإرسال
+    window.playlistQueue = [];
 
-    document.getElementById('broadcast-btn').addEventListener('click', () => {
-        const type = document.getElementById('type').value;
-        const url = document.getElementById('url').value;
-        const ticker = document.getElementById('ticker').value;
+    window.addToQueue = () => {
+        const type = document.getElementById('vid-type').value;
+        const url = document.getElementById('vid-url').value;
+        const title = document.getElementById('vid-title').value;
+        const duration = parseInt(document.getElementById('vid-duration').value);
 
-        if(!url) return alert("الرجاء وضع رابط أو معرف فيديو");
+        if(!url || !duration) return alert("الرابط والمدة مطلوبان!");
 
-        // الإرسال لقاعدة البيانات
-        set(ref(db, 'channel_status'), {
+        const item = {
             type: type,
-            url: url,
-            ticker: ticker || "أهلاً بكم في قناة الأحمدية",
-            startTime: Date.now(), // هذا هو سر المزامنة!
-            timestamp: Date.now()
-        }).then(() => {
-            alert("✅ تم تحديث البث! سيتم مزامنة جميع المشاهدين لهذه اللحظة.");
-        }).catch((error) => {
-            alert("خطأ: " + error.message);
+            id: (type === 'youtube') ? url : null, // لليوتيوب نستخدم المعرف
+            url: (type === 'direct') ? url : null, // للمباشر نستخدم الرابط
+            title: title || "فيديو",
+            duration: duration
+        };
+
+        window.playlistQueue.push(item);
+        renderQueue();
+        
+        // تنظيف الحقول
+        document.getElementById('vid-url').value = '';
+        document.getElementById('vid-title').value = '';
+        document.getElementById('vid-duration').value = '';
+    };
+
+    window.removeFromQueue = (index) => {
+        window.playlistQueue.splice(index, 1);
+        renderQueue();
+    };
+
+    function renderQueue() {
+        const container = document.getElementById('playlist-container');
+        const emptyMsg = document.getElementById('empty-msg');
+        const totalBadge = document.getElementById('total-duration');
+        
+        container.innerHTML = "";
+        let totalSec = 0;
+
+        if(window.playlistQueue.length === 0) {
+            container.appendChild(emptyMsg);
+            totalBadge.innerText = "0 ثانية";
+            return;
+        }
+
+        window.playlistQueue.forEach((item, index) => {
+            totalSec += item.duration;
+            container.innerHTML += `
+                <div class="playlist-item">
+                    <div>
+                        <strong>${index+1}. ${item.title}</strong>
+                        <small class="text-muted d-block">${item.type}</small>
+                    </div>
+                    <div>
+                        <span class="duration-badge">${item.duration} ث</span>
+                        <button onclick="removeFromQueue(${index})" class="btn btn-sm btn-outline-danger ms-2">x</button>
+                    </div>
+                </div>
+            `;
         });
-    });
+
+        // تحويل الثواني لدقائق للعرض
+        const minutes = Math.floor(totalSec / 60);
+        const seconds = totalSec % 60;
+        totalBadge.innerText = `${minutes} دقيقة و ${seconds} ثانية`;
+    }
+
+    // زر الإطلاق الكبير
+    window.publishPlaylist = () => {
+        if(window.playlistQueue.length === 0) return alert("القائمة فارغة!");
+
+        const ticker = document.getElementById('ticker-text').value;
+
+        // إرسال البيانات لـ Firebase
+        set(ref(db, 'channel_status'), {
+            playlist: window.playlistQueue,
+            playlistStartTime: Date.now(), // لحظة الصفر التي سيعتمد عليها الجميع
+            tickerText: ticker || "أهلاً بكم في قناة الأحمدية",
+            tickerSpeed: 25,
+            sponsor: { show: false } // إعادة تعيين الراعي
+        }).then(() => {
+            alert("✅ تم إطلاق القائمة! ستبدأ الآن عند جميع المشاهدين.");
+        });
+    };
+
+    window.updateSettingsOnly = () => {
+        const ticker = document.getElementById('ticker-text').value;
+        if(ticker) {
+            update(ref(db, 'channel_status'), { tickerText: ticker })
+            .then(() => alert("تم تحديث الشريط"));
+        }
+    };
 </script>
 
 </body>
