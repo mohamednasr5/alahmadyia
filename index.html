@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الاحمدية لايف | بث مباشر</title>
+    <style>
+        /* التنسيقات العامة */
+        :root {
+            --main-color: #c0392b; /* لون الهوية - أحمر */
+            --bg-color: #1a1a1a;
+            --text-color: #ffffff;
+        }
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden; /* لمنع التمرير في صفحة المشاهدة */
+        }
+
+        /* حاوية التلفزيون */
+        #tv-container {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            background: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* مشغل الفيديو */
+        video {
+            width: 100%;
+            height: 100%;
+            object-fit: contain; /* للحفاظ على أبعاد الفيديو */
+        }
+
+        /* شعار القناة */
+        .channel-logo {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 10;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            border-radius: 5px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .live-badge {
+            background-color: red;
+            color: white;
+            padding: 2px 8px;
+            font-size: 12px;
+            border-radius: 3px;
+            animation: pulse 1.5s infinite;
+        }
+
+        /* الإعلانات الصورية */
+        #ad-overlay {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            width: 200px; /* حجم الإعلان */
+            z-index: 9;
+            display: none; /* مخفي افتراضيا */
+        }
+        #ad-overlay img {
+            width: 100%;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+        }
+
+        /* شريط الأخبار المتحرك */
+        .ticker-wrap {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 50px;
+            background-color: rgba(192, 57, 43, 0.9); /* خلفية حمراء نصف شفافة */
+            overflow: hidden;
+            box-sizing: border-box;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            z-index: 20;
+            border-top: 2px solid gold;
+        }
+        .ticker-content {
+            display: inline-block;
+            padding-left: 100%;
+            animation: ticker 30s linear infinite;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        @keyframes ticker {
+            0% { transform: translate3d(0, 0, 0); }
+            100% { transform: translate3d(100%, 0, 0); } /* اتجاه لليمين للعربية */
+        }
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        /* زر دخول الأدمن */
+        #admin-btn {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 20px;
+            height: 20px;
+            z-index: 100;
+            cursor: pointer;
+            opacity: 0; /* مخفي */
+        }
+
+        /* لوحة التحكم */
+        #admin-panel {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #fff;
+            color: #333;
+            padding: 20px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 500px;
+            z-index: 200;
+            display: none;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        #admin-panel h2 { margin-top: 0; border-bottom: 2px solid var(--main-color); padding-bottom: 10px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input[type="text"], input[type="url"], textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .btn {
+            background: var(--main-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 4px;
+            width: 100%;
+            font-size: 16px;
+        }
+        .btn-close { background: #555; margin-top: 10px; }
+
+        /* منطقة تصدير الكود */
+        #export-area {
+            background: #f1f1f1;
+            padding: 10px;
+            margin-top: 10px;
+            font-family: monospace;
+            font-size: 12px;
+            display: none;
+            word-break: break-all;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="tv-container">
+        <div class="channel-logo">
+            <span class="live-badge">مباشر</span>
+            <span>الاحمدية لايف</span>
+        </div>
+
+        <div id="ad-overlay">
+            <img id="ad-image" src="" alt="إعلان">
+        </div>
+
+        <video id="main-player" autoplay playsinline>
+            <source src="" type="video/mp4">
+            متصفحك لا يدعم تشغيل الفيديو.
+        </video>
+
+        <div class="ticker-wrap">
+            <div class="ticker-content" id="ticker-text">
+                أهلاً بكم في إذاعة الاحمدية لايف - بث تجريبي - نتشرف بمتابعتكم
+            </div>
+        </div>
+    </div>
+
+    <div id="admin-btn" onclick="openAdmin()"></div>
+
+    <div id="admin-panel">
+        <h2>لوحة التحكم - ستوديو البث</h2>
+        
+        <div class="form-group">
+            <label>رابط الفيديو (MP4 مباشر):</label>
+            <input type="url" id="video-url-input" placeholder="https://example.com/video.mp4">
+            <small>يفضل رابط مباشر ينتهي بـ .mp4</small>
+        </div>
+
+        <div class="form-group">
+            <label>نص الشريط المتحرك:</label>
+            <textarea id="ticker-input" rows="2"></textarea>
+        </div>
+
+        <div class="form-group">
+            <label>رابط صورة الإعلان (أو اتركها فارغة للإخفاء):</label>
+            <input type="text" id="ad-url-input" placeholder="رابط الصورة">
+        </div>
+
+        <button class="btn" onclick="saveSettings()">تطبيق الإعدادات</button>
+        
+        <div id="export-area">
+            <strong>هام لـ GitHub:</strong> لكي يرى الناس هذه التغييرات، يجب أن تنسخ الكود التالي وتستبدل قسم "CONFIG" في كود الصفحة الأصلي:<br><br>
+            <div id="json-output"></div>
+        </div>
+
+        <button class="btn btn-close" onclick="closeAdmin()">إغلاق</button>
+    </div>
+
+    <script>
+        // === إعدادات القناة الافتراضية (هذا الجزء الذي ستقوم بتعديله ليعمل عند الجميع) ===
+        // يمكنك وضع عدة مقاطع فيديو لتعمل بالتتابع (الجدولة)
+        let channelConfig = {
+            playlist: [
+                {
+                    url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4", // فيديو تجريبي
+                    duration: 596 // المدة بالثواني (مهم للجدولة)
+                },
+                {
+                    url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
+                    duration: 653
+                }
+            ],
+            tickerText: "عاجل: انطلاق بث إذاعة الاحمدية لايف رسمياً - تابعونا على مدار الساعة",
+            adImage: "" // ضع رابط صورة هنا لتظهر كإعلان
+        };
+
+        const player = document.getElementById('main-player');
+        const ticker = document.getElementById('ticker-text');
+        const adOverlay = document.getElementById('ad-overlay');
+        const adImg = document.getElementById('ad-image');
+
+        // === منطق التشغيل والجدولة ===
+        
+        function initChannel() {
+            // 1. تحميل الإعدادات المحفوظة محلياً (للمعاينة)
+            const savedConfig = localStorage.getItem('ahmadia_config');
+            if (savedConfig) {
+                const parsed = JSON.parse(savedConfig);
+                // دمج الإعدادات المحفوظة مع الهيكل الأساسي
+                if(parsed.currentVideo) channelConfig.playlist[0].url = parsed.currentVideo;
+                if(parsed.ticker) channelConfig.tickerText = parsed.ticker;
+                if(parsed.ad) channelConfig.adImage = parsed.ad;
+            }
+
+            // 2. تطبيق النصوص والإعلانات
+            ticker.textContent = channelConfig.tickerText;
+            
+            if (channelConfig.adImage && channelConfig.adImage.trim() !== "") {
+                adImg.src = channelConfig.adImage;
+                adOverlay.style.display = 'block';
+            } else {
+                adOverlay.style.display = 'none';
+            }
+
+            // 3. تشغيل الفيديو
+            // في النسخة البسيطة سنقوم بتشغيل الفيديو الأول وتكراره
+            // لتفعيل الجدولة الحقيقية نحتاج حساب الوقت
+            playStream();
+        }
+
+        function playStream() {
+            // هنا نأخذ أول فيديو كمثال للبث المستمر
+            const currentVideo = channelConfig.playlist[0].url;
+            
+            if (player.src !== currentVideo) {
+                player.src = currentVideo;
+                player.load();
+            }
+            
+            // محاولة التشغيل التلقائي (المتصفحات تتطلب تفاعل المستخدم للصوت)
+            player.play().catch(e => {
+                console.log("يجب على المستخدم التفاعل لتشغيل الصوت");
+                player.muted = true; // البدء صامتاً لتجاوز الحظر
+                player.play();
+                // يمكن إضافة زر هنا "انقر لتشغيل الصوت"
+            });
+
+            // عند انتهاء الفيديو، يعيد تشغيله (Loop) أو ينتقل للتالي
+            player.onended = () => {
+                player.play(); 
+            };
+        }
+
+        // === دوال لوحة التحكم ===
+
+        function openAdmin() {
+            const pass = prompt("أدخل كلمة مرور المسؤول:");
+            if (pass === "1234") { // غير كلمة المرور هنا
+                document.getElementById('admin-panel').style.display = 'block';
+                // تعبئة الحقول بالبيانات الحالية
+                document.getElementById('video-url-input').value = channelConfig.playlist[0].url;
+                document.getElementById('ticker-input').value = channelConfig.tickerText;
+                document.getElementById('ad-url-input').value = channelConfig.adImage;
+            } else {
+                alert("كلمة المرور خاطئة");
+            }
+        }
+
+        function closeAdmin() {
+            document.getElementById('admin-panel').style.display = 'none';
+        }
+
+        function saveSettings() {
+            const newVideo = document.getElementById('video-url-input').value;
+            const newTicker = document.getElementById('ticker-input').value;
+            const newAd = document.getElementById('ad-url-input').value;
+
+            // تحديث الواجهة فوراً للمعاينة
+            channelConfig.playlist[0].url = newVideo;
+            channelConfig.tickerText = newTicker;
+            channelConfig.adImage = newAd;
+            
+            // الحفظ في المتصفح (localStorage) لكي تراها أنت فقط
+            const saveObj = {
+                currentVideo: newVideo,
+                ticker: newTicker,
+                ad: newAd
+            };
+            localStorage.setItem('ahmadia_config', JSON.stringify(saveObj));
+
+            // إنشاء كود JSON للمستخدم لينسخه إلى GitHub
+            const jsonString = JSON.stringify(channelConfig, null, 4);
+            document.getElementById('export-area').style.display = 'block';
+            document.getElementById('json-output').innerText = 
+                `عدل المتغير channelConfig في الكود ليصبح:\n let channelConfig = ${jsonString};`;
+
+            initChannel(); // إعادة تحميل القناة
+            alert("تم تطبيق الإعدادات محلياً! لتعميمها انسخ الكود الظاهر أسفل الزر وضعه في الملف على GitHub.");
+        }
+
+        // تشغيل القناة عند التحميل
+        window.onload = initChannel;
+
+    </script>
+</body>
+</html>
