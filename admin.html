@@ -390,41 +390,13 @@
             opacity: 0.6;
         }
 
-        /* التابات */
-        .tabs {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 25px;
-            background: rgba(0,0,0,0.4);
-            padding: 8px;
-            border-radius: 15px;
-        }
-        
-        .tab-btn {
-            flex: 1;
-            padding: 12px;
-            border: none;
-            background: transparent;
-            color: white;
-            font-family: 'Cairo', sans-serif;
-            font-size: 0.95rem;
-            cursor: pointer;
-            border-radius: 10px;
-            transition: all 0.3s;
-        }
-        
-        .tab-btn.active { background: var(--primary); }
-        .tab-btn:hover:not(.active) { background: rgba(255,255,255,0.1); }
-        
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-
         /* التحكم في الشريط */
         .ticker-controls {
             background: rgba(0,0,0,0.3);
             padding: 20px;
             border-radius: 15px;
-            margin-top: 15px;
+            border: 1px solid rgba(243, 156, 18, 0.3);
+            margin-bottom: 20px;
         }
         
         .slider-container {
@@ -569,7 +541,7 @@
                         
                         <div class="instant-warning">
                             <i class="fas fa-exclamation-triangle"></i>
-                            <span>سيتم قطع البث الحالي فوراً وتشغيل هذا المحتوى مباشرة</span>
+                            <span>سيتم قطع البث الحالي فوراً وتشغيل هذا المحتوى مباشرة (بدون ظهور نص)</span>
                         </div>
                         
                         <div class="form-group">
@@ -684,6 +656,30 @@
                 
                 <!-- القسم الأيسر -->
                 <div>
+                    <!-- التحكم في الشريط (منفصل) -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h2><i class="fas fa-newspaper" style="color: var(--secondary);"></i> التحكم في الشريط الإخباري</h2>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>نص الشريط</label>
+                            <input type="text" id="ticker-text" class="form-control" placeholder="اكتب النص هنا...">
+                        </div>
+                        
+                        <div class="slider-container">
+                            <label>السرعة:</label>
+                            <input type="range" id="ticker-speed" min="5" max="120" value="30" oninput="updateTickerSpeedUI()">
+                            <span class="slider-value" id="ticker-speed-value">30s</span>
+                        </div>
+                        
+                        <div style="margin-top: 15px;">
+                            <button class="btn btn-warning btn-block" onclick="updateTickerOnly()">
+                                <i class="fas fa-sync"></i> تحديث الشريط الآن (لا يؤثر على البث)
+                            </button>
+                        </div>
+                    </div>
+
                     <div class="card">
                         <div class="card-header">
                             <h2><i class="fas fa-list"></i> قائمة التشغيل</h2>
@@ -714,30 +710,12 @@
                             </p>
                         </div>
                         
-                        <!-- التحكم في الشريط -->
-                        <div class="ticker-controls">
-                            <h4 style="margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
-                                <i class="fas fa-newspaper" style="color: var(--secondary);"></i>
-                                التحكم في الشريط الإخباري
-                            </h4>
-                            
-                            <div class="form-group" style="margin-bottom: 15px;">
-                                <input type="text" id="ticker-text" class="form-control" placeholder="نص الشريط الإخباري">
-                            </div>
-                            
-                            <div class="slider-container">
-                                <label>السرعة:</label>
-                                <input type="range" id="ticker-speed" min="5" max="120" value="30" oninput="updateTickerSpeed()">
-                                <span class="slider-value" id="ticker-speed-value">30s</span>
-                            </div>
-                        </div>
-                        
                         <div class="btn-group">
                             <button class="btn btn-success btn-block" onclick="goLive()">
-                                <i class="fas fa-broadcast-tower"></i> بدء البث
+                                <i class="fas fa-broadcast-tower"></i> بدء / إعادة تشغيل البث
                             </button>
                             <button class="btn btn-danger" onclick="stopBroadcast()">
-                                <i class="fas fa-stop-circle"></i> إيقاف
+                                <i class="fas fa-stop-circle"></i> إيقاف البث
                             </button>
                         </div>
                     </div>
@@ -834,6 +812,15 @@
             const indicator = document.getElementById('status-indicator');
             const statusText = document.getElementById('status-text');
             
+            // تحديث واجهة الشريط الحالية
+            if(data && data.tickerText) {
+                document.getElementById('ticker-text').value = data.tickerText;
+            }
+            if(data && data.tickerSpeed) {
+                document.getElementById('ticker-speed').value = data.tickerSpeed;
+                document.getElementById('ticker-speed-value').textContent = data.tickerSpeed + 's';
+            }
+
             // حساب عدد التكرارات
             if(data && data.playlist && data.playlistStartTime) {
                 const totalDuration = data.playlist.reduce((sum, item) => sum + (parseInt(item.duration) || 0), 0);
@@ -902,8 +889,8 @@
             input.placeholder = placeholders[platform];
         };
 
-        // تحديث سرعة الشريط
-        window.updateTickerSpeed = () => {
+        // تحديث واجهة سرعة الشريط
+        window.updateTickerSpeedUI = () => {
             const speed = document.getElementById('ticker-speed').value;
             document.getElementById('ticker-speed-value').textContent = speed + 's';
         };
@@ -919,7 +906,6 @@
 
             let item = { type: platform, title: title || 'فيديو', duration };
 
-            // استخراج معرف يوتيوب
             if(platform === 'youtube' || platform === 'shorts') {
                 let videoId = url;
                 if(url.includes('youtube.com') || url.includes('youtu.be')) {
@@ -1033,6 +1019,30 @@
             draggedIndex = null;
         };
 
+        // --- تعديل الشريط فقط (بدون إعادة تشغيل البث) ---
+        window.updateTickerOnly = () => {
+            const text = document.getElementById('ticker-text').value;
+            const speed = parseInt(document.getElementById('ticker-speed').value) || 30;
+
+            // استخدام update لتحديث حقلين فقط دون التأثير على playlistStartTime
+            update(ref(db, 'channel_status'), {
+                tickerText: text,
+                tickerSpeed: speed
+            }).then(() => {
+                // تأثير بسيط للأزرار
+                const btn = event.target;
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '<i class="fas fa-check"></i> تم التحديث';
+                btn.classList.replace('btn-warning', 'btn-success');
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                    btn.classList.replace('btn-success', 'btn-warning');
+                }, 2000);
+            }).catch(err => {
+                alert('حدث خطأ: ' + err.message);
+            });
+        };
+
         // البث الفوري
         window.playInstant = () => {
             const platform = document.getElementById('instant-platform').value;
@@ -1043,7 +1053,6 @@
 
             let instantData = { active: true, platform, url, title: title || 'بث خاص' };
 
-            // استخراج معرف يوتيوب
             if(platform === 'youtube' || platform === 'shorts') {
                 let videoId = url;
                 if(url.includes('youtube.com') || url.includes('youtu.be')) {
@@ -1074,13 +1083,15 @@
             update(ref(db, 'channel_status'), updates).then(() => alert('تم الحفظ'));
         };
 
-        // بدء البث
+        // بدء البث (يؤثر على القائمة ووقت البداية فقط)
         window.goLive = () => {
             if(playlistQueue.length === 0) return alert('القائمة فارغة!');
 
             const tickerText = document.getElementById('ticker-text').value || 'أهلاً بكم في قناة الأحمدية';
             const tickerSpeed = parseInt(document.getElementById('ticker-speed').value) || 30;
 
+            // هذا الزر سيقوم بتحديث وقت البداية (playlistStartTime)
+            // مما يعيد ضبط التزامن للجميع عند الصفر
             set(ref(db, 'channel_status'), {
                 playlist: playlistQueue,
                 playlistStartTime: Date.now(),
@@ -1091,7 +1102,7 @@
                     left: { show: document.getElementById('ad-left-toggle').checked, url: document.getElementById('ad-left-url').value }
                 },
                 sponsor: { show: document.getElementById('sponsor-toggle').checked, url: document.getElementById('sponsor-url').value }
-            }).then(() => alert('تم بدء البث!'));
+            }).then(() => alert('تم بدء البث! الجميع متزامن الآن.'));
         };
 
         // إيقاف البث
