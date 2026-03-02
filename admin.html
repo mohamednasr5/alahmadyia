@@ -2,163 +2,84 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لوحة التحكم | الاحمدية لايف</title>
+    <title>لوحة تحكم القناة | Firebase</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        body { background: #f4f4f4; padding: 20px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        .card { box-shadow: 0 4px 6px rgba(0,0,0,0.1); border: none; margin-bottom: 20px; }
-        .video-item { background: #fff; padding: 10px; margin-bottom: 10px; border-radius: 5px; display: flex; justify-content: space-between; align-items: center; border-right: 4px solid #c0392b; }
-        .status-box { padding: 10px; border-radius: 5px; margin-bottom: 20px; display: none; }
-    </style>
+    <style>body { background: #f8f9fa; padding: 20px; font-family: 'Segoe UI', sans-serif; }</style>
 </head>
 <body>
 
-<div class="container" style="max-width: 800px;">
-    <h2 class="text-center mb-4">🎛️ لوحة التحكم - الاحمدية لايف</h2>
-
-    <div class="card p-3 mb-4">
-        <h5>⚙️ إعدادات الربط</h5>
-        <div class="row g-2">
-            <div class="col-md-6">
-                <label>Bin ID:</label>
-                <input type="text" id="bin-id" class="form-control" value="69a607f443b1c97be9ad21cb" readonly style="background:#e9ecef">
-            </div>
-            <div class="col-md-6">
-                <label>X-Master-Key (API Key):</label>
-                <input type="password" id="api-key" class="form-control" placeholder="ضع الكود الذي يبدأ بـ $2 هنا">
-            </div>
+<div class="container" style="max-width: 600px;">
+    <h3 class="text-center mb-4">🔴 وحدة التحكم بالبث المباشر</h3>
+    
+    <div class="card p-4 shadow-sm">
+        <div class="mb-3">
+            <label>حالة الاتصال:</label>
+            <span id="status-badge" class="badge bg-secondary">جاري الاتصال...</span>
         </div>
-        <button onclick="loadData()" class="btn btn-primary mt-2">📥 اتصال وتحميل البيانات</button>
-    </div>
 
-    <div id="status-msg" class="status-box"></div>
+        <hr>
 
-    <div class="card p-3">
-        <h5>📢 شريط الأخبار</h5>
-        <input type="text" id="ticker-text" class="form-control" placeholder="اكتب الخبر العاجل هنا...">
-    </div>
-
-    <div class="card p-3">
-        <h5>➕ إضافة محتوى</h5>
-        <div class="row g-2">
-            <div class="col-md-3">
-                <select id="vid-type" class="form-select">
-                    <option value="youtube">يوتيوب (ID)</option>
-                    <option value="direct">مباشر (MP4/m3u8)</option>
-                    <option value="embed">تضمين (Embed)</option>
-                </select>
-            </div>
-            <div class="col-md-6">
-                <input type="text" id="vid-url" class="form-control" placeholder="الرابط أو المعرف">
-            </div>
-            <div class="col-md-3">
-                <input type="text" id="vid-title" class="form-control" placeholder="العنوان">
-            </div>
+        <h5 class="mb-3">ماذا تريد أن تعرض الآن؟</h5>
+        <div class="mb-3">
+            <select id="type" class="form-select mb-2">
+                <option value="youtube">يوتيوب (فيديو أو بث مباشر)</option>
+                <option value="direct">رابط مباشر (MP4 / M3U8)</option>
+            </select>
+            <input type="text" id="url" class="form-control" placeholder="معرف الفيديو (ID) أو الرابط المباشر">
+            <small class="text-muted">لليوتيوب ضع المعرف فقط (مثل: jfKfPfyJRdk)</small>
         </div>
-        <button onclick="addVideo()" class="btn btn-success mt-2 w-100">إضافة للقائمة</button>
-    </div>
 
-    <div class="card p-3">
-        <h5>📋 القائمة الحالية</h5>
-        <div id="playlist-container" class="mt-3">
-            <p class="text-center text-muted">اضغط "اتصال وتحميل البيانات" أولاً...</p>
+        <div class="mb-3">
+            <label>شريط الأخبار:</label>
+            <input type="text" id="ticker" class="form-control" placeholder="اكتب النص هنا...">
         </div>
-    </div>
 
-    <button onclick="saveToCloud()" class="btn btn-danger btn-lg w-100 mb-5">🚀 حفظ وتحديث البث للجميع</button>
+        <button id="broadcast-btn" class="btn btn-danger w-100 btn-lg">🚀 بث الآن (مزامنة الجميع)</button>
+    </div>
 </div>
 
-<script>
-    let currentData = { ticker: "", playlist: [] };
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+    import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js";
 
-    // استرجاع المفتاح إذا كان محفوظاً
-    document.getElementById('api-key').value = localStorage.getItem('ahmadia_api_key') || '';
+    const firebaseConfig = {
+        apiKey: "AIzaSyBxqN1tGzv6bY95FtrbhmUxYucucJ_4veY",
+        authDomain: "ahmdiya-f99f2.firebaseapp.com",
+        databaseURL: "https://ahmdiya-f99f2-default-rtdb.firebaseio.com",
+        projectId: "ahmdiya-f99f2",
+        storageBucket: "ahmdiya-f99f2.firebasestorage.app",
+        messagingSenderId: "831329583457",
+        appId: "1:831329583457:web:acbf686be2c624b4780520",
+        measurementId: "G-73QPC6RXM3"
+    };
 
-    function showMsg(text, type='success') {
-        const box = document.getElementById('status-msg');
-        box.className = `status-box alert alert-${type}`;
-        box.textContent = text;
-        box.style.display = 'block';
-        setTimeout(() => box.style.display = 'none', 3000);
-    }
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
 
-    async function loadData() {
-        const binId = document.getElementById('bin-id').value;
-        const apiKey = document.getElementById('api-key').value;
+    // تغيير حالة الاتصال في الواجهة
+    document.getElementById('status-badge').className = "badge bg-success";
+    document.getElementById('status-badge').innerText = "متصل بـ Firebase";
 
-        if(!apiKey) { showMsg("يرجى إدخال X-Master-Key", "danger"); return; }
-        localStorage.setItem('ahmadia_api_key', apiKey);
+    document.getElementById('broadcast-btn').addEventListener('click', () => {
+        const type = document.getElementById('type').value;
+        const url = document.getElementById('url').value;
+        const ticker = document.getElementById('ticker').value;
 
-        try {
-            const res = await fetch(`https://api.jsonbin.io/v3/b/${binId}/latest`, {
-                headers: { 'X-Master-Key': apiKey }
-            });
-            
-            if(!res.ok) throw new Error("خطأ في الاتصال");
-            
-            const json = await res.json();
-            currentData = json.record;
-            
-            document.getElementById('ticker-text').value = currentData.ticker || "";
-            if(!currentData.playlist) currentData.playlist = [];
-            
-            renderPlaylist();
-            showMsg("تم الاتصال بنجاح!");
-        } catch (e) {
-            showMsg("فشل الاتصال! تأكد من مفتاح API Key", "danger");
-            console.error(e);
-        }
-    }
+        if(!url) return alert("الرجاء وضع رابط أو معرف فيديو");
 
-    function renderPlaylist() {
-        const container = document.getElementById('playlist-container');
-        container.innerHTML = "";
-        currentData.playlist.forEach((item, index) => {
-            container.innerHTML += `
-                <div class="video-item">
-                    <div><strong>${index+1}. ${item.title}</strong><br><small class="text-muted">${item.type}</small></div>
-                    <button class="btn btn-sm btn-outline-danger" onclick="deleteItem(${index})">حذف</button>
-                </div>`;
+        // الإرسال لقاعدة البيانات
+        set(ref(db, 'channel_status'), {
+            type: type,
+            url: url,
+            ticker: ticker || "أهلاً بكم في قناة الأحمدية",
+            startTime: Date.now(), // هذا هو سر المزامنة!
+            timestamp: Date.now()
+        }).then(() => {
+            alert("✅ تم تحديث البث! سيتم مزامنة جميع المشاهدين لهذه اللحظة.");
+        }).catch((error) => {
+            alert("خطأ: " + error.message);
         });
-    }
-
-    function addVideo() {
-        const type = document.getElementById('vid-type').value;
-        const urlVal = document.getElementById('vid-url').value;
-        const title = document.getElementById('vid-title').value;
-        if(!urlVal || !title) return alert("أكمل البيانات");
-
-        let newItem = { type: type, title: title };
-        if(type === 'youtube') newItem.id = urlVal;
-        else newItem.url = urlVal;
-
-        currentData.playlist.push(newItem);
-        renderPlaylist();
-        document.getElementById('vid-url').value = '';
-        document.getElementById('vid-title').value = '';
-    }
-
-    function deleteItem(index) {
-        currentData.playlist.splice(index, 1);
-        renderPlaylist();
-    }
-
-    async function saveToCloud() {
-        const binId = document.getElementById('bin-id').value;
-        const apiKey = document.getElementById('api-key').value;
-        currentData.ticker = document.getElementById('ticker-text').value;
-
-        try {
-            const res = await fetch(`https://api.jsonbin.io/v3/b/${binId}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json', 'X-Master-Key': apiKey },
-                body: JSON.stringify(currentData)
-            });
-            if(res.ok) showMsg("✅ تم التحديث بنجاح!");
-            else showMsg("خطأ أثناء الحفظ", "danger");
-        } catch (e) { showMsg("فشل الاتصال", "danger"); }
-    }
+    });
 </script>
 
 </body>
