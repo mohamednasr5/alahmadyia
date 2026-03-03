@@ -33,7 +33,6 @@
             overflow: hidden;
         }
 
-        /* خلفية متحركة */
         .bg-animation {
             position: absolute;
             top: 0;
@@ -67,7 +66,6 @@
                 radial-gradient(circle at 80% 20%, rgba(192, 57, 43, 0.05) 0%, transparent 40%);
         }
 
-        /* اللوجو */
         .pro-logo-container {
             position: absolute;
             top: 25px;
@@ -100,7 +98,6 @@
             animation: shine 5s ease-in-out infinite;
         }
 
-        /* عداد المشاهدين */
         .viewers-counter {
             position: absolute;
             top: 25px;
@@ -127,7 +124,6 @@
             animation: pulseLive 1.5s ease-in-out infinite;
         }
 
-        /* الإعلان الجانبي */
         .side-ad {
             position: absolute;
             top: 50%;
@@ -166,7 +162,6 @@
             font-weight: bold;
         }
 
-        /* الراعي */
         .sponsor-box {
             position: absolute;
             top: 85px;
@@ -193,7 +188,6 @@
             display: block;
         }
 
-        /* المشغلات */
         .player-layer {
             position: absolute;
             top: 0;
@@ -219,7 +213,6 @@
             background: #000;
         }
 
-        /* طبقة الصورة مع الصوت */
         .image-layer {
             position: absolute;
             top: 0;
@@ -244,7 +237,6 @@
             background: transparent;
         }
 
-        /* الشريط الإخباري */
         .ticker-wrap {
             position: absolute;
             bottom: 0;
@@ -274,7 +266,6 @@
             letter-spacing: 0.5px;
         }
 
-        /* شاشة البدء */
         #start-overlay {
             position: fixed;
             top: 0;
@@ -319,7 +310,6 @@
             box-shadow: 0 0 60px rgba(192, 57, 43, 0.6);
         }
 
-        /* حالة عدم وجود بث */
         #offline-screen {
             position: absolute;
             top: 0;
@@ -345,7 +335,6 @@
             opacity: 0.6;
         }
 
-        /* الآن يعرض */
         .now-playing {
             position: absolute;
             bottom: 70px;
@@ -425,7 +414,6 @@
             <img id="sponsor-img" src="" alt="Sponsor">
         </div>
         
-        <!-- الإعلانات الجانبية -->
         <div id="side-ad-right" class="side-ad right">
             <div class="ad-label">إعلان</div>
             <img id="side-ad-right-img" src="" alt="Ad">
@@ -437,7 +425,6 @@
         
         <div id="interaction-blocker"></div>
         
-        <!-- طبقات المشغلات -->
         <div id="youtube-player" class="player-layer"></div>
         <video id="native-player" class="player-layer" playsinline></video>
         <div id="image-layer" class="image-layer"></div>
@@ -451,8 +438,6 @@
         <div id="now-playing" class="now-playing">
             <strong>الآن:</strong> <span id="now-title">-</span>
         </div>
-        
-        <!-- تم حذف مؤشر البث الخاص حسب الطلب -->
         
         <div class="ticker-wrap">
             <div class="ticker-content" id="ticker-text">أهلاً بكم في قناة الأحمدية</div>
@@ -493,60 +478,20 @@
         const overlay = document.getElementById('start-overlay');
         const root = document.documentElement;
 
-        // تسجيل المشاهد
-        function registerViewer() {
-            const viewerRef = ref(db, `viewers/${viewerId}`);
-            set(viewerRef, {
-                joinedAt: Date.now(),
-                page: 'channel'
-            });
-            onDisconnect(viewerRef).remove();
-        }
-
-        // تحديث عدد المشاهدين
-        onValue(ref(db, 'viewers'), (snapshot) => {
+        // --- استماع خاص للإعلانات والراعي (لتحديث فوري) ---
+        onValue(ref(db, 'channel_status/sponsor'), (snapshot) => {
             const data = snapshot.val();
-            const count = data ? Object.keys(data).filter(k => data[k].page === 'channel').length : 0;
-            document.getElementById('viewers-count').textContent = count;
-        });
-
-        overlay.addEventListener('click', () => {
-            overlay.style.opacity = '0';
-            setTimeout(() => overlay.style.display = 'none', 400);
-            isStarted = true;
-            registerViewer();
-            if(currentData) handleDataChange(currentData);
-        });
-
-        // الاستماع لقاعدة البيانات
-        onValue(ref(db, 'channel_status'), (snapshot) => {
-            const data = snapshot.val();
-            if (data) {
-                currentData = data;
-                
-                // تحديث الشريط (منفصل عن الفيديو)
-                if(data.tickerText) tickerEl.innerText = data.tickerText;
-                if(data.tickerSpeed) root.style.setProperty('--ticker-duration', data.tickerSpeed + 's');
-                
-                // الراعي
-                const sponsorBox = document.getElementById('sponsor-container');
-                if(data.sponsor && data.sponsor.show) {
-                    sponsorBox.style.display = 'block';
-                    document.getElementById('sponsor-img').src = data.sponsor.url;
-                } else {
-                    sponsorBox.style.display = 'none';
-                }
-                
-                // الإعلانات الجانبية
-                updateSideAds(data.sideAds);
-                
-                if(isStarted) handleDataChange(data);
+            const sponsorBox = document.getElementById('sponsor-container');
+            if(data && data.show && data.url) {
+                sponsorBox.style.display = 'block';
+                document.getElementById('sponsor-img').src = data.url;
             } else {
-                showOffline();
+                sponsorBox.style.display = 'none';
             }
         });
 
-        function updateSideAds(ads) {
+        onValue(ref(db, 'channel_status/sideAds'), (snapshot) => {
+            const ads = snapshot.val();
             const rightAd = document.getElementById('side-ad-right');
             const leftAd = document.getElementById('side-ad-left');
             
@@ -563,7 +508,64 @@
             } else {
                 leftAd.style.display = 'none';
             }
+        });
+
+        // --- استماع خاص للشريط الإخباري (لتحديث فوري) ---
+        onValue(ref(db, 'channel_status/tickerText'), (snapshot) => {
+            const text = snapshot.val();
+            if (text) {
+                tickerEl.innerText = text;
+            }
+        });
+
+        onValue(ref(db, 'channel_status/tickerSpeed'), (snapshot) => {
+            const speed = snapshot.val();
+            if (speed) {
+                root.style.setProperty('--ticker-duration', speed + 's');
+            }
+        });
+
+        // --- الاستماع العام للبث ---
+        onValue(ref(db, 'channel_status/playlist'), (snapshot) => {
+            // هذا الجزء يتعامل فقط مع القائمة وليس بالتعديل على الإعلانات
+            if (!snapshot.exists()) {
+                showOffline();
+            }
+        });
+        
+        // نستمع للتغييرات الكاملة لتحديث المتغيرات العامة فقط
+        onValue(ref(db, 'channel_status'), (snapshot) => {
+            const data = snapshot.val();
+            if(data) {
+                currentData = data;
+                if(isStarted) handleDataChange(data);
+            } else {
+                showOffline();
+            }
+        });
+
+        function registerViewer() {
+            const viewerRef = ref(db, `viewers/${viewerId}`);
+            set(viewerRef, {
+                joinedAt: Date.now(),
+                page: 'channel'
+            });
+            onDisconnect(viewerRef).remove();
         }
+
+        onValue(ref(db, 'viewers'), (snapshot) => {
+            const data = snapshot.val();
+            const count = data ? Object.keys(data).filter(k => data[k].page === 'channel').length : 0;
+            document.getElementById('viewers-count').textContent = count;
+        });
+
+        overlay.addEventListener('click', () => {
+            overlay.style.opacity = '0';
+            setTimeout(() => overlay.style.display = 'none', 400);
+            isStarted = true;
+            registerViewer();
+            if(currentData) handleDataChange(currentData);
+        });
 
         function showOffline() {
             document.getElementById('offline-screen').style.display = 'flex';
@@ -571,20 +573,16 @@
         }
 
         function handleDataChange(data) {
-            // التحقق من البث الفوري
             if(data.instantPlay && data.instantPlay.active) {
                 playInstantContent(data.instantPlay);
                 return;
             }
             
-            // إيقاف البث الفوري إذا كان يعمل
             if(isPlayingInstant) {
                 isPlayingInstant = false;
-                // تم حذف إخفاء المؤشر لأننا حذفناه من التصميم
                 lastPlayedId = null;
             }
             
-            // تشغيل القائمة العادية
             if(data.playlist && data.playlist.length > 0) {
                 startScheduler(data);
             } else {
@@ -592,7 +590,6 @@
             }
         }
 
-        // البث الفوري (بدون نص "بث خاص")
         function playInstantContent(instantData) {
             if(isPlayingInstant && lastPlayedId === instantData.url) return;
             
@@ -600,8 +597,6 @@
             lastPlayedId = instantData.url;
             
             document.getElementById('offline-screen').style.display = 'none';
-            // تم حذف السطر الذي يظهر "بث خاص"
-            
             hideAll();
             
             const platform = instantData.platform;
@@ -631,7 +626,6 @@
             document.getElementById('offline-screen').style.display = 'none';
             calculateAndPlay(data);
             
-            // التحقق من التزامن كل ثانية
             checkInterval = setInterval(() => {
                 if(!isPlayingInstant) {
                     calculateAndPlay(data);
@@ -654,12 +648,8 @@
             
             if(totalDuration === 0) return;
             
-            // التكرار التلقائي - Modulo
             let currentLoopTime = timeElapsedTotal % totalDuration;
             
-            // إذا انتهت القائمة وبدأت من جديد
-            let currentLoop = Math.floor(timeElapsedTotal / totalDuration);
-
             let timeCursor = 0;
             let foundVideo = null;
             let seekTime = 0;
@@ -679,7 +669,6 @@
             }
         }
 
-        // دالة لتصحيح الانحراف الزمني (Sync Correction)
         function syncCorrection() {
             if(!currentData || !currentData.playlistStartTime) return;
             const now = Date.now();
@@ -699,13 +688,11 @@
                 timeCursor += itemDuration;
             }
 
-            // تصحيح الفيديو المباشر
             if (nativePlayer.style.display === 'block') {
                 if (Math.abs(nativePlayer.currentTime - seekTime) > 2) {
                     nativePlayer.currentTime = seekTime;
                 }
             }
-            // تصحيح الصوت
             if (audioPlayer.style.display === 'block' || imageLayer.style.display === 'block') {
                 if (Math.abs(audioPlayer.currentTime - seekTime) > 2) {
                     audioPlayer.currentTime = seekTime;
@@ -717,13 +704,11 @@
             const videoKey = video.id || video.url || video.image || JSON.stringify(video);
             
             if (lastPlayedId === videoKey && !isPlayingInstant) {
-                // تصحيح التزامن يتم في interval منفصل
                 return; 
             }
 
             lastPlayedId = videoKey;
             
-            // تحديث "الآن يعرض"
             document.getElementById('now-playing').style.display = 'block';
             document.getElementById('now-title').textContent = video.title || 'بدون عنوان';
             
@@ -768,7 +753,6 @@
             audioPlayer.pause();
         }
 
-        // --- YouTube & Shorts ---
         window.onYouTubeIframeAPIReady = function() {
             ytPlayer = new YT.Player('youtube-player', {
                 height: '100%',
@@ -797,7 +781,6 @@
                 });
                 ytPlayer.playVideo();
             } else {
-                // Fallback with iframe
                 ytContainer.innerHTML = `
                     <iframe 
                         src="https://www.youtube.com/embed/${id}?autoplay=1&start=${Math.floor(startSeconds)}&controls=0&rel=0" 
@@ -808,7 +791,6 @@
             }
         }
 
-        // --- TikTok ---
         function playTikTok(url) {
             ytContainer.style.display = 'block';
             if(url.includes('tiktok.com')) {
@@ -838,7 +820,6 @@
             }
         }
 
-        // --- Facebook & Reels ---
         function playFacebook(url) {
             ytContainer.style.display = 'block';
             let embedUrl = url;
@@ -860,7 +841,6 @@
             `;
         }
 
-        // --- Instagram Reels ---
         function playInstagram(url) {
             ytContainer.style.display = 'block';
             ytContainer.innerHTML = `
@@ -876,7 +856,6 @@
             `;
         }
 
-        // --- Direct Video/Audio ---
         function playDirect(url, startSeconds) {
             nativePlayer.style.display = 'block';
             if (Hls.isSupported() && url.includes('.m3u8')) {
@@ -894,7 +873,6 @@
             }
         }
 
-        // --- Image with Audio ---
         function playAudioWithImage(imageUrl, audioUrl, seekTime) {
             imageLayer.style.display = 'block';
             imageLayer.style.backgroundImage = `url(${imageUrl})`;
@@ -903,13 +881,11 @@
             audioPlayer.play().catch(e => console.log('Audio autoplay blocked'));
         }
 
-        // --- Image Only ---
         function showImage(imageUrl, duration) {
             imageLayer.style.display = 'block';
             imageLayer.style.backgroundImage = `url(${imageUrl})`;
         }
 
-        // Load YouTube API
         var tag = document.createElement('script');
         tag.src = "https://www.youtube.com/iframe_api";
         var firstScriptTag = document.getElementsByTagName('script')[0];
