@@ -1,688 +1,121 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لوحة التحكم | قناة الأحمدية</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <style>
-        /* نفس الستايل السابق */
-        :root { --primary: #c0392b; --primary-dark: #962d22; --secondary: #f39c12; --success: #27ae60; --danger: #e74c3c; --warning: #e67e22; --dark: #1a1a2e; --darker: #0a0a0a; }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Cairo', sans-serif; background: linear-gradient(135deg, var(--darker) 0%, var(--dark) 100%); min-height: 100vh; color: white; }
-        #login-screen { position: fixed; inset: 0; background: linear-gradient(135deg, var(--darker) 0%, var(--dark) 100%); display: flex; justify-content: center; align-items: center; z-index: 10000; }
-        .login-box { background: rgba(255,255,255,0.05); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); padding: 50px; border-radius: 25px; text-align: center; max-width: 420px; width: 90%; }
-        .login-box h1 { margin-bottom: 10px; font-size: 1.8rem; }
-        .login-box .subtitle { opacity: 0.6; margin-bottom: 35px; }
-        .login-box input { width: 100%; padding: 18px 25px; border: none; border-radius: 12px; background: rgba(255,255,255,0.1); color: white; font-size: 1.2rem; text-align: center; margin-bottom: 20px; font-family: 'Cairo', sans-serif; }
-        .login-box input::placeholder { color: rgba(255,255,255,0.4); }
-        .login-box input:focus { outline: none; background: rgba(255,255,255,0.15); }
-        .login-box button { width: 100%; padding: 18px; border: none; border-radius: 12px; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; font-size: 1.2rem; font-weight: bold; cursor: pointer; transition: all 0.3s ease; font-family: 'Cairo', sans-serif; }
-        .login-box button:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(192, 57, 43, 0.4); }
-        .login-error { color: var(--danger); margin-top: 15px; display: none; }
-        .header { background: rgba(0,0,0,0.4); padding: 18px 30px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); position: sticky; top: 0; z-index: 100; }
-        .header h1 { font-size: 1.4rem; display: flex; align-items: center; gap: 12px; }
-        .header h1 i { color: var(--secondary); }
-        .header-actions { display: flex; gap: 15px; align-items: center; }
-        .viewers-badge { background: linear-gradient(135deg, var(--success), #219a52); padding: 10px 20px; border-radius: 25px; font-size: 0.95rem; display: flex; align-items: center; gap: 10px; font-weight: bold; }
-        .status-indicator { display: flex; align-items: center; gap: 10px; padding: 10px 20px; border-radius: 25px; font-size: 0.9rem; }
-        .status-live { background: rgba(39, 174, 96, 0.2); border: 2px solid var(--success); color: var(--success); }
-        .status-offline { background: rgba(231, 76, 60, 0.2); border: 2px solid var(--danger); color: var(--danger); }
-        .status-dot { width: 12px; height: 12px; border-radius: 50%; }
-        .status-live .status-dot { background: var(--success); animation: pulse 1.5s infinite; }
-        .status-offline .status-dot { background: var(--danger); }
-        .logout-btn { background: transparent; border: 2px solid rgba(255,255,255,0.3); color: white; padding: 10px 20px; border-radius: 10px; cursor: pointer; transition: all 0.3s; font-family: 'Cairo', sans-serif; font-weight: 600; }
-        .logout-btn:hover { background: rgba(255,255,255,0.1); border-color: white; }
-        .main-content { padding: 25px; max-width: 1500px; margin: 0 auto; }
-        .grid { display: grid; grid-template-columns: 380px 1fr; gap: 25px; }
-        @media (max-width: 1100px) { .grid { grid-template-columns: 1fr; } }
-        .card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 25px; margin-bottom: 25px; }
-        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); }
-        .card-header h2 { font-size: 1.15rem; display: flex; align-items: center; gap: 10px; }
-        .card-header h2 i { color: var(--secondary); }
-        .instant-section { background: linear-gradient(135deg, rgba(192, 57, 43, 0.3), rgba(231, 76, 60, 0.2)); border: 2px solid var(--danger); }
-        .instant-section .card-header h2 { color: var(--danger); }
-        .instant-warning { background: rgba(0,0,0,0.3); padding: 15px; border-radius: 10px; margin-bottom: 20px; font-size: 0.9rem; display: flex; align-items: flex-start; gap: 12px; }
-        .instant-warning i { color: var(--warning); font-size: 1.2rem; margin-top: 2px; }
-        .form-group { margin-bottom: 18px; }
-        .form-group label { display: block; margin-bottom: 8px; font-size: 0.95rem; opacity: 0.85; }
-        .form-control { width: 100%; padding: 14px 18px; border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; background: rgba(0,0,0,0.4); color: white; font-size: 1rem; font-family: 'Cairo', sans-serif; transition: all 0.3s; }
-        .form-control:focus { outline: none; border-color: var(--primary); background: rgba(0,0,0,0.6); }
-        .form-control::placeholder { color: rgba(255,255,255,0.35); }
-        .btn { padding: 14px 28px; border: none; border-radius: 12px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.3s; font-family: 'Cairo', sans-serif; display: inline-flex; align-items: center; gap: 10px; }
-        .btn-primary { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; }
-        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(192, 57, 43, 0.4); }
-        .btn-success { background: linear-gradient(135deg, var(--success), #219a52); color: white; }
-        .btn-success:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(39, 174, 96, 0.4); }
-        .btn-warning { background: linear-gradient(135deg, var(--secondary), var(--warning)); color: var(--dark); }
-        .btn-danger { background: linear-gradient(135deg, var(--danger), #c0392b); color: white; }
-        .btn-sm { padding: 10px 18px; font-size: 0.9rem; }
-        .btn-block { width: 100%; justify-content: center; }
-        .btn-group { display: flex; gap: 12px; margin-top: 15px; }
-        .playlist-container { max-height: 450px; overflow-y: auto; margin-bottom: 20px; }
-        .playlist-item { background: rgba(0,0,0,0.4); padding: 18px; border-radius: 12px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(255,255,255,0.08); transition: all 0.3s; cursor: grab; }
-        .playlist-item:hover { background: rgba(0,0,0,0.6); border-color: rgba(255,255,255,0.15); }
-        .playlist-item:active { cursor: grabbing; }
-        .playlist-item-info h4 { font-size: 1rem; margin-bottom: 8px; }
-        .playlist-item-meta { display: flex; gap: 12px; font-size: 0.85rem; opacity: 0.7; }
-        .badge { padding: 5px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
-        .badge-youtube { background: #ff0000; }
-        .badge-tiktok { background: #000; border: 1px solid #fff; }
-        .badge-facebook { background: #1877f2; }
-        .badge-instagram { background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); }
-        .badge-shorts { background: #ff0000; }
-        .badge-reels { background: linear-gradient(45deg, #405de6, #833ab4, #c13584); }
-        .badge-direct { background: var(--success); }
-        .badge-audio { background: #9b59b6; }
-        .summary-bar { background: rgba(0,0,0,0.4); padding: 18px; border-radius: 12px; display: flex; justify-content: space-around; align-items: center; margin-bottom: 20px; }
-        .summary-item { text-align: center; }
-        .summary-value { font-size: 1.8rem; font-weight: bold; color: var(--secondary); }
-        .summary-label { font-size: 0.85rem; opacity: 0.6; }
-        .ticker-controls { background: rgba(0,0,0,0.3); padding: 20px; border-radius: 15px; border: 1px solid rgba(243, 156, 18, 0.3); margin-bottom: 20px; }
-        .slider-container { display: flex; align-items: center; gap: 15px; margin-top: 12px; }
-        .slider-container label { min-width: 60px; font-size: 0.9rem; }
-        .slider-container input[type="range"] { flex: 1; height: 8px; -webkit-appearance: none; background: rgba(255,255,255,0.2); border-radius: 4px; cursor: pointer; }
-        .slider-container input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 22px; height: 22px; background: var(--secondary); border-radius: 50%; cursor: pointer; }
-        .slider-value { min-width: 50px; text-align: center; font-weight: bold; color: var(--secondary); }
-        .ad-toggle { display: flex; align-items: center; gap: 15px; margin-bottom: 15px; }
-        .toggle-switch { position: relative; width: 55px; height: 28px; }
-        .toggle-switch input { opacity: 0; width: 0; height: 0; }
-        .toggle-slider { position: absolute; cursor: pointer; inset: 0; background: rgba(255,255,255,0.2); border-radius: 28px; transition: 0.3s; }
-        .toggle-slider:before { position: absolute; content: ""; height: 22px; width: 22px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: 0.3s; }
-        input:checked + .toggle-slider { background: var(--success); }
-        input:checked + .toggle-slider:before { transform: translateX(27px); }
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); border-radius: 4px; }
-        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.3); }
-        @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(1.3); } }
-        @media (max-width: 768px) { .header { flex-direction: column; gap: 15px; padding: 15px 20px; } .header-actions { width: 100%; justify-content: space-between; flex-wrap: wrap; } .main-content { padding: 15px; } .card { padding: 18px; } .summary-bar { flex-direction: column; gap: 15px; } .btn-group { flex-direction: column; } }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>لوحة التحكم | قناة الأحمدية</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-family:Cairo;background:#111;color:#fff}
+.container{max-width:1000px;margin:auto;padding:20px}
+input,select,button{padding:10px;margin:5px 0;width:100%;border:none;border-radius:6px}
+button{background:#c0392b;color:#fff;font-weight:bold;cursor:pointer}
+button:hover{opacity:.9}
+.section{background:#1c1c1c;padding:20px;border-radius:10px;margin-bottom:20px}
+h2{margin-top:0;color:#f39c12}
+</style>
 </head>
 <body>
 
-    <div id="login-screen">
-        <div class="login-box">
-            <h1><i class="fas fa-shield-alt"></i> لوحة التحكم</h1>
-            <p class="subtitle">قناة الأحمدية</p>
-            <input type="password" id="password-input" placeholder="أدخل كلمة السر">
-            <button onclick="attemptLogin()">دخول</button>
-            <p class="login-error" id="login-error">كلمة السر غير صحيحة</p>
-        </div>
-    </div>
+<div class="container">
 
-    <div id="main-app" style="display: none;">
-        <header class="header">
-            <h1><i class="fas fa-broadcast-tower"></i> لوحة تحكم البث</h1>
-            <div class="header-actions">
-                <div class="viewers-badge">
-                    <i class="fas fa-users"></i>
-                    <span id="viewers-count">0</span> مشاهد
-                </div>
-                <div id="status-indicator" class="status-indicator status-offline">
-                    <span class="status-dot"></span>
-                    <span id="status-text">غير متصل</span>
-                </div>
-                <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> خروج</button>
-            </div>
-        </header>
+<div class="section">
+<h2>الشريط الإخباري</h2>
+<input id="tickerText" placeholder="نص الشريط">
+<input type="number" id="tickerSpeed" placeholder="سرعة (بالثواني)" value="30">
+<select id="tickerDirection">
+<option value="rtl">يمين → يسار</option>
+<option value="ltr">يسار → يمين</option>
+</select>
+<button onclick="updateTicker()">تحديث الشريط</button>
+</div>
 
-        <main class="main-content">
-            <div class="grid">
-                <!-- القسم الأيمن -->
-                <div>
-                    <!-- البث الفوري -->
-                    <div class="card instant-section">
-                        <div class="card-header">
-                            <h2><i class="fas fa-bolt"></i> البث الفوري</h2>
-                        </div>
-                        <div class="instant-warning">
-                            <i class="fas fa-exclamation-triangle"></i>
-                            <span>سيتم قطع البث الحالي فوراً وتشغيل هذا المحتوى مباشرة (بدون ظهور نص)</span>
-                        </div>
-                        <div class="form-group">
-                            <label>المنصة</label>
-                            <select id="instant-platform" class="form-control" onchange="updateInstantPlaceholder()">
-                                <option value="youtube">YouTube</option>
-                                <option value="shorts">YouTube Shorts</option>
-                                <option value="tiktok">TikTok</option>
-                                <option value="facebook">Facebook Video</option>
-                                <option value="reels">Facebook Reels</option>
-                                <option value="instagram">Instagram Reels</option>
-                                <option value="direct">رابط مباشر</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>الرابط</label>
-                            <input type="text" id="instant-url" class="form-control" placeholder="أدخل الرابط كاملاً">
-                        </div>
-                        <div class="form-group">
-                            <label>العنوان (اختياري)</label>
-                            <input type="text" id="instant-title" class="form-control" placeholder="عنوان البث الطارئ">
-                        </div>
-                        <div class="btn-group">
-                            <button class="btn btn-danger btn-block" onclick="playInstant()">
-                                <i class="fas fa-play"></i> تشغيل فوري
-                            </button>
-                            <button class="btn btn-warning btn-block" onclick="stopInstant()">
-                                <i class="fas fa-stop"></i> إيقاف والعودة للقائمة
-                            </button>
-                        </div>
-                    </div>
+<div class="section">
+<h2>الإعلانات الجانبية</h2>
+<label><input type="checkbox" id="adRightShow"> إعلان يمين</label>
+<input id="adRightUrl" placeholder="رابط صورة إعلان يمين">
+<label><input type="checkbox" id="adLeftShow"> إعلان يسار</label>
+<input id="adLeftUrl" placeholder="رابط صورة إعلان يسار">
+<button onclick="updateAds()">حفظ الإعلانات</button>
+</div>
 
-                    <!-- إضافة محتوى -->
-                    <div class="card">
-                        <div class="card-header">
-                            <h2><i class="fas fa-plus-circle"></i> إضافة للقائمة</h2>
-                        </div>
-                        <div class="form-group">
-                            <label>المنصة</label>
-                            <select id="vid-platform" class="form-control" onchange="updatePlaceholder()">
-                                <option value="youtube">YouTube</option>
-                                <option value="shorts">YouTube Shorts</option>
-                                <option value="tiktok">TikTok</option>
-                                <option value="facebook">Facebook Video</option>
-                                <option value="reels">Facebook Reels</option>
-                                <option value="instagram">Instagram Reels</option>
-                                <option value="direct">رابط مباشر (m3u8/mp4/mp3)</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>الرابط</label>
-                            <input type="text" id="vid-url" class="form-control" placeholder="معرف الفيديو أو الرابط كاملاً">
-                        </div>
-                        <div class="form-group">
-                            <label>العنوان</label>
-                            <input type="text" id="vid-title" class="form-control" placeholder="عنوان المحتوى">
-                        </div>
-                        <div class="form-group">
-                            <label>المدة (بالثواني)</label>
-                            <div style="display: flex; gap: 10px; align-items: center;">
-                                <input type="number" id="vid-duration" class="form-control" placeholder="180" style="flex: 1;">
-                                <span style="opacity: 0.6;">ثانية</span>
-                            </div>
-                        </div>
-                        <button class="btn btn-primary btn-block" onclick="addVideo()">
-                            <i class="fas fa-plus"></i> إضافة للقائمة
-                        </button>
-                    </div>
-                </div>
+<div class="section">
+<h2>الراعي</h2>
+<label><input type="checkbox" id="sponsorShow"> إظهار الراعي</label>
+<input id="sponsorUrl" placeholder="رابط لوجو الراعي">
+<button onclick="updateSponsor()">حفظ الراعي</button>
+</div>
 
-                <!-- القسم الأيسر -->
-                <div>
-                    <!-- التحكم في الشريط -->
-                    <div class="card">
-                        <div class="card-header">
-                            <h2><i class="fas fa-newspaper" style="color: var(--secondary);"></i> الشريط الإخباري</h2>
-                        </div>
-                        <div class="form-group">
-                            <label>نص الشريط</label>
-                            <input type="text" id="ticker-text" class="form-control" placeholder="اكتب النص هنا...">
-                        </div>
-                        <div class="form-group">
-                            <label>اتجاه الشريط</label>
-                            <select id="ticker-direction" class="form-control">
-                                <option value="ltr">يسار ---> يمين (عكس)</option>
-                                <option value="rtl">يمين ---> يسار (عادي)</option>
-                            </select>
-                        </div>
-                        <div class="slider-container">
-                            <label>السرعة:</label>
-                            <input type="range" id="ticker-speed" min="5" max="120" value="30" oninput="updateTickerSpeedUI()">
-                            <span class="slider-value" id="ticker-speed-value">30s</span>
-                        </div>
-                        <div style="margin-top: 15px;">
-                            <button class="btn btn-warning btn-block" onclick="updateTickerOnly(this)">
-                                <i class="fas fa-sync"></i> تحديث الشريط الآن
-                            </button>
-                        </div>
-                    </div>
+<div class="section">
+<h2>بث فيديو مباشر</h2>
+<input id="videoUrl" placeholder="رابط mp4 أو m3u8">
+<button onclick="goLive()">بدء البث</button>
+<button onclick="stopLive()">إيقاف البث</button>
+</div>
 
-                    <!-- إعدادات الفاصل التلقائي -->
-                    <div class="card" style="border-color: rgba(192, 57, 43, 0.3);">
-                        <div class="card-header">
-                            <h2><i class="fas fa-film" style="color: var(--primary);"></i> الفاصل التلقائي بين الفيديوهات</h2>
-                        </div>
-                        <div class="ad-toggle">
-                            <label class="toggle-switch">
-                                <input type="checkbox" id="auto-break-enabled" checked>
-                                <span class="toggle-slider"></span>
-                            </label>
-                            <span>تفعيل الفاصل التلقائي</span>
-                        </div>
-                        <div class="form-group">
-                            <label>رابط الفيديو (YouTube)</label>
-                            <input type="text" id="break-video-url" class="form-control" value="https://www.youtube.com/watch?v=vX2mDUvb2pI">
-                        </div>
-                        <div class="form-group">
-                            <label>مدة الفاصل (ثانية)</label>
-                            <input type="number" id="break-video-duration" class="form-control" value="30">
-                        </div>
-                    </div>
+</div>
 
-                    <div class="card">
-                        <div class="card-header">
-                            <h2><i class="fas fa-list"></i> قائمة التشغيل</h2>
-                            <button class="btn btn-danger btn-sm" onclick="clearPlaylist()">
-                                <i class="fas fa-trash"></i> مسح
-                            </button>
-                        </div>
-                        <div class="summary-bar">
-                            <div class="summary-item">
-                                <div class="summary-value" id="total-items">0</div>
-                                <div class="summary-label">عناصر</div>
-                            </div>
-                            <div class="summary-item">
-                                <div class="summary-value" id="total-duration">00:00</div>
-                                <div class="summary-label">المدة الكلية</div>
-                            </div>
-                            <div class="summary-item">
-                                <div class="summary-value" id="loop-count">0</div>
-                                <div class="summary-label">تكرار</div>
-                            </div>
-                        </div>
-                        <div class="playlist-container" id="playlist-container">
-                            <p style="text-align: center; opacity: 0.4; padding: 50px;">
-                                <i class="fas fa-inbox" style="font-size: 4rem; margin-bottom: 20px; display: block;"></i>
-                                القائمة فارغة
-                            </p>
-                        </div>
-                        <div class="btn-group">
-                            <button class="btn btn-success btn-block" onclick="goLive()">
-                                <i class="fas fa-broadcast-tower"></i> بدء / إعادة تشغيل البث
-                            </button>
-                            <button class="btn btn-danger" onclick="stopBroadcast()">
-                                <i class="fas fa-stop-circle"></i> إيقاف البث
-                            </button>
-                        </div>
-                    </div>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+import { getDatabase, ref, update, remove } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js";
 
-                    <!-- الإعلانات -->
-                    <div class="card">
-                        <div class="card-header">
-                            <h2><i class="fas fa-ad"></i> الإعلانات والراعي</h2>
-                        </div>
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-                            <div>
-                                <div class="ad-toggle">
-                                    <label class="toggle-switch">
-                                        <input type="checkbox" id="ad-right-toggle">
-                                        <span class="toggle-slider"></span>
-                                    </label>
-                                    <span>إعلان يمين</span>
-                                </div>
-                                <input type="text" id="ad-right-url" class="form-control" placeholder="رابط الصورة">
-                            </div>
-                            <div>
-                                <div class="ad-toggle">
-                                    <label class="toggle-switch">
-                                        <input type="checkbox" id="ad-left-toggle">
-                                        <span class="toggle-slider"></span>
-                                    </label>
-                                    <span>إعلان يسار</span>
-                                </div>
-                                <input type="text" id="ad-left-url" class="form-control" placeholder="رابط الصورة">
-                            </div>
-                        </div>
-                        <hr style="border-color: rgba(255,255,255,0.1); margin: 20px 0;">
-                        <div class="ad-toggle">
-                            <label class="toggle-switch">
-                                <input type="checkbox" id="sponsor-toggle">
-                                <span class="toggle-slider"></span>
-                            </label>
-                            <span>إظهار الراعي</span>
-                        </div>
-                        <input type="text" id="sponsor-url" class="form-control" placeholder="رابط لوجو الراعي">
-                        <button class="btn btn-warning btn-sm btn-block" style="margin-top: 15px;" onclick="updateAdsAndSponsor()">
-                            <i class="fas fa-save"></i> حفظ الإعلانات
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </main>
-    </div>
+const firebaseConfig={
+apiKey:"AIzaSyBxqN1tGzv6bY95FtrbhmUxYucucJ_4veY",
+authDomain:"ahmdiya-f99f2.firebaseapp.com",
+databaseURL:"https://ahmdiya-f99f2-default-rtdb.firebaseio.com",
+projectId:"ahmdiya-f99f2",
+storageBucket:"ahmdiya-f99f2.appspot.com",
+messagingSenderId:"831329583457",
+appId:"1:831329583457:web:acbf686be2c624b4780520"
+};
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-        import { getDatabase, ref, set, update, remove, onValue, onDisconnect } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js";
+const app=initializeApp(firebaseConfig);
+const db=getDatabase(app);
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyBxqN1tGzv6bY95FtrbhmUxYucucJ_4veY",
-            authDomain: "ahmdiya-f99f2.firebaseapp.com",
-            databaseURL: "https://ahmdiya-f99f2-default-rtdb.firebaseio.com",
-            projectId: "ahmdiya-f99f2",
-            storageBucket: "ahmdiya-f99f2.firebasestorage.app",
-            messagingSenderId: "831329583457",
-            appId: "1:831329583457:web:acbf686be2c624b4780520",
-            measurementId: "G-73QPC6RXM3"
-        };
+window.updateTicker=()=>{
+update(ref(db,"channel_status"),{
+tickerText:document.getElementById("tickerText").value,
+tickerSpeed:document.getElementById("tickerSpeed").value,
+tickerDirection:document.getElementById("tickerDirection").value
+});
+};
 
-        const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
+window.updateAds=()=>{
+update(ref(db,"channel_status"),{
+sideAds:{
+right:{
+show:document.getElementById("adRightShow").checked,
+url:document.getElementById("adRightUrl").value
+},
+left:{
+show:document.getElementById("adLeftShow").checked,
+url:document.getElementById("adLeftUrl").value
+}
+}
+});
+};
 
-        const ADMIN_PASSWORD = '521988';
-        let playlistQueue = [];
+window.updateSponsor=()=>{
+update(ref(db,"channel_status"),{
+sponsor:{
+show:document.getElementById("sponsorShow").checked,
+url:document.getElementById("sponsorUrl").value
+}
+});
+};
 
-        function registerAdmin() {
-            const adminId = 'admin_' + Math.random().toString(36).substr(2, 9);
-            const adminRef = ref(db, `viewers/${adminId}`);
-            set(adminRef, { joinedAt: Date.now(), page: 'admin' });
-            onDisconnect(adminRef).remove();
-        }
+window.goLive=()=>{
+update(ref(db,"channel_status"),{
+playlist:[{type:"direct",url:document.getElementById("videoUrl").value,duration:999999}],
+playlistStartTime:Date.now()
+});
+};
 
-        onValue(ref(db, 'viewers'), (snapshot) => {
-            const data = snapshot.val();
-            let count = data ? Object.values(data).filter(v => v.page === 'channel').length : 0;
-            document.getElementById('viewers-count').textContent = count;
-        });
+window.stopLive=()=>{
+remove(ref(db,"channel_status/playlist"));
+remove(ref(db,"channel_status/playlistStartTime"));
+};
+</script>
 
-        onValue(ref(db, 'channel_status'), (snapshot) => {
-            const data = snapshot.val();
-            const indicator = document.getElementById('status-indicator');
-            const statusText = document.getElementById('status-text');
-
-            if(data && data.tickerText) {
-                document.getElementById('ticker-text').value = data.tickerText;
-            }
-            if(data && data.tickerSpeed) {
-                document.getElementById('ticker-speed').value = data.tickerSpeed;
-                document.getElementById('ticker-speed-value').textContent = data.tickerSpeed + 's';
-            }
-            if(data && data.tickerDirection) {
-                document.getElementById('ticker-direction').value = data.tickerDirection;
-            }
-
-            if(data && data.playlist && data.playlistStartTime) {
-                const totalDuration = data.playlist.reduce((sum, item) => sum + (parseInt(item.duration) || 0), 0);
-                const elapsed = (Date.now() - data.playlistStartTime) / 1000;
-                const loops = Math.floor(elapsed / totalDuration);
-                document.getElementById('loop-count').textContent = loops;
-            }
-
-            if(data && data.playlist && data.playlist.length > 0) {
-                indicator.className = 'status-indicator status-live';
-                statusText.textContent = 'البث جارٍ';
-            } else {
-                indicator.className = 'status-indicator status-offline';
-                statusText.textContent = 'غير متصل';
-            }
-        });
-
-        window.attemptLogin = () => {
-            const password = document.getElementById('password-input').value;
-            if(password === ADMIN_PASSWORD) {
-                document.getElementById('login-screen').style.display = 'none';
-                document.getElementById('main-app').style.display = 'block';
-                document.getElementById('login-error').style.display = 'none';
-                registerAdmin();
-            } else {
-                document.getElementById('login-error').style.display = 'block';
-                document.getElementById('password-input').value = '';
-            }
-        };
-
-        document.getElementById('password-input').addEventListener('keypress', (e) => {
-            if(e.key === 'Enter') attemptLogin();
-        });
-
-        window.logout = () => location.reload();
-
-        window.updatePlaceholder = () => {
-            const platform = document.getElementById('vid-platform').value;
-            const input = document.getElementById('vid-url');
-            const placeholders = {
-                youtube: 'معرف الفيديو أو الرابط كاملاً',
-                shorts: 'رابط Shorts كاملاً',
-                tiktok: 'رابط TikTok كاملاً',
-                facebook: 'رابط فيديو Facebook كاملاً',
-                reels: 'رابط Facebook Reels كاملاً',
-                instagram: 'رابط Instagram Reels كاملاً',
-                direct: 'رابط مباشر (m3u8, mp4, mp3)'
-            };
-            input.placeholder = placeholders[platform];
-        };
-
-        window.updateInstantPlaceholder = () => {
-            const platform = document.getElementById('instant-platform').value;
-            const input = document.getElementById('instant-url');
-            const placeholders = {
-                youtube: 'معرف الفيديو أو الرابط كاملاً',
-                shorts: 'رابط Shorts كاملاً',
-                tiktok: 'رابط TikTok كاملاً',
-                facebook: 'رابط فيديو Facebook كاملاً',
-                reels: 'رابط Facebook Reels كاملاً',
-                instagram: 'رابط Instagram Reels كاملاً',
-                direct: 'رابط مباشر (m3u8, mp4)'
-            };
-            input.placeholder = placeholders[platform];
-        };
-
-        window.updateTickerSpeedUI = () => {
-            const speed = document.getElementById('ticker-speed').value;
-            document.getElementById('ticker-speed-value').textContent = speed + 's';
-        };
-
-        function getYouTubeId(url) {
-            const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/)([^&\?\/]+)/);
-            return match ? match[1] : null;
-        }
-
-        window.addVideo = () => {
-            const platform = document.getElementById('vid-platform').value;
-            const url = document.getElementById('vid-url').value.trim();
-            const title = document.getElementById('vid-title').value.trim();
-            const duration = parseInt(document.getElementById('vid-duration').value) || 180;
-
-            if(!url) return alert('الرجاء إدخال الرابط');
-
-            let item = { type: platform, title: title || 'فيديو', duration };
-
-            if(platform === 'youtube' || platform === 'shorts') {
-                let videoId = getYouTubeId(url);
-                if(!videoId) videoId = url;
-                item.id = videoId;
-            } else {
-                item.url = url;
-            }
-
-            playlistQueue.push(item);
-            renderPlaylist();
-
-            document.getElementById('vid-url').value = '';
-            document.getElementById('vid-title').value = '';
-            document.getElementById('vid-duration').value = '';
-        };
-
-        function renderPlaylist() {
-            const container = document.getElementById('playlist-container');
-
-            if(playlistQueue.length === 0) {
-                container.innerHTML = `<p style="text-align: center; opacity: 0.4; padding: 50px;">
-                    <i class="fas fa-inbox" style="font-size: 4rem; margin-bottom: 20px; display: block;"></i>
-                    القائمة فارغة
-                </p>`;
-                document.getElementById('total-items').textContent = '0';
-                document.getElementById('total-duration').textContent = '00:00';
-                return;
-            }
-
-            let totalSeconds = 0;
-            let html = '';
-            const badgeClasses = {
-                youtube: 'badge-youtube', shorts: 'badge-shorts', tiktok: 'badge-tiktok',
-                facebook: 'badge-facebook', reels: 'badge-reels', instagram: 'badge-instagram',
-                direct: 'badge-direct', 'audio-image': 'badge-audio', image: 'badge-audio'
-            };
-
-            playlistQueue.forEach((item, index) => {
-                totalSeconds += item.duration;
-                html += `
-                    <div class="playlist-item" draggable="true" ondragstart="dragStart(event, ${index})" ondragover="dragOver(event)" ondrop="drop(event, ${index})">
-                        <div class="playlist-item-info">
-                            <h4>${index + 1}. ${item.title}</h4>
-                            <div class="playlist-item-meta">
-                                <span class="badge ${badgeClasses[item.type] || 'badge-direct'}">${item.type}</span>
-                                <span>${formatDuration(item.duration)}</span>
-                            </div>
-                        </div>
-                        <button class="btn btn-danger btn-sm" onclick="removeItem(${index})">
-                            <i class="fas fa-times"></i>
-                        </button>
-                    </div>
-                `;
-            });
-
-            container.innerHTML = html;
-            document.getElementById('total-items').textContent = playlistQueue.length;
-            document.getElementById('total-duration').textContent = formatDuration(totalSeconds);
-        }
-
-        function formatDuration(seconds) {
-            const h = Math.floor(seconds / 3600);
-            const m = Math.floor((seconds % 3600) / 60);
-            const s = seconds % 60;
-            return h > 0 ? `${h}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}` : `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
-        }
-
-        window.removeItem = (index) => { playlistQueue.splice(index, 1); renderPlaylist(); };
-        window.clearPlaylist = () => { if(confirm('مسح كل القائمة؟')) { playlistQueue = []; renderPlaylist(); } };
-
-        let draggedIndex = null;
-        window.dragStart = (e, index) => { draggedIndex = index; e.dataTransfer.effectAllowed = 'move'; };
-        window.dragOver = (e) => { e.preventDefault(); };
-        window.drop = (e, index) => {
-            e.preventDefault();
-            if(draggedIndex !== null && draggedIndex !== index) {
-                const item = playlistQueue.splice(draggedIndex, 1)[0];
-                playlistQueue.splice(index, 0, item);
-                renderPlaylist();
-            }
-            draggedIndex = null;
-        };
-
-        // تحديث الشريط (بما في ذلك الاتجاه)
-        window.updateTickerOnly = (btnEl) => {
-            const textInput = document.getElementById('ticker-text').value;
-            const speedInput = document.getElementById('ticker-speed').value;
-            const directionInput = document.getElementById('ticker-direction').value;
-
-            const text = String(textInput || 'أهلاً بكم في قناة الأحمدية');
-            const speed = String(speedInput || 30);
-
-            // حفظ مباشر دون مسح
-            const updates = {};
-            updates['tickerText'] = text;
-            updates['tickerSpeed'] = speed;
-            updates['tickerDirection'] = directionInput; // ltr أو rtl
-
-            update(ref(db, 'channel_status'), updates)
-                .then(() => {
-                    const btn = btnEl;
-                    const originalText = btn.innerHTML;
-                    btn.innerHTML = '<i class="fas fa-check"></i> تم التحديث';
-                    btn.classList.replace('btn-warning', 'btn-success');
-                    setTimeout(() => {
-                        btn.innerHTML = originalText;
-                        btn.classList.replace('btn-success', 'btn-warning');
-                    }, 2000);
-                })
-                .catch(err => {
-                    console.error(err);
-                    alert('حدث خطأ: ' + err.message);
-                });
-        };
-
-        // تحديث الإعلانات (حفظ مباشر)
-        window.updateAdsAndSponsor = () => {
-            const sideAdsData = {
-                right: { show: document.getElementById('ad-right-toggle').checked, url: document.getElementById('ad-right-url').value },
-                left: { show: document.getElementById('ad-left-toggle').checked, url: document.getElementById('ad-left-url').value }
-            };
-            const sponsorData = { show: document.getElementById('sponsor-toggle').checked, url: document.getElementById('sponsor-url').value };
-            
-            // استخدام set مباشر بدون remove لتجنب التقطيع
-            set(ref(db, 'channel_status/sideAds'), sideAdsData);
-            set(ref(db, 'channel_status/sponsor'), sponsorData).then(() => alert('تم الحفظ والتحديث الفوري'));
-        };
-
-        window.playInstant = () => {
-            const platform = document.getElementById('instant-platform').value;
-            const url = document.getElementById('instant-url').value.trim();
-            const title = document.getElementById('instant-title').value.trim();
-
-            if(!url) return alert('الرجاء إدخال الرابط');
-
-            let instantData = { active: true, platform, url, title: title || 'بث خاص' };
-
-            if(platform === 'youtube' || platform === 'shorts') {
-                let videoId = getYouTubeId(url);
-                if(videoId) instantData.url = videoId;
-            }
-
-            update(ref(db, 'channel_status/instantPlay'), instantData)
-                .then(() => alert('تم تشغيل البث الفوري!'));
-        };
-
-        window.stopInstant = () => {
-            remove(ref(db, 'channel_status/instantPlay'))
-                .then(() => alert('تم إيقاف البث الفوري والعودة للقائمة'));
-        };
-
-        window.goLive = () => {
-            if(playlistQueue.length === 0) return alert('القائمة فارغة!');
-
-            const isBreakEnabled = document.getElementById('auto-break-enabled').checked;
-            let finalPlaylist = [];
-
-            const breakVideoUrl = document.getElementById('break-video-url').value;
-            const breakVideoDuration = parseInt(document.getElementById('break-video-duration').value) || 30;
-            const breakVideoId = getYouTubeId(breakVideoUrl) || breakVideoUrl;
-
-            const breakItem = {
-                type: 'youtube',
-                id: breakVideoId,
-                title: 'فاصل إعلاني',
-                duration: breakVideoDuration
-            };
-
-            if (isBreakEnabled) {
-                playlistQueue.forEach(item => {
-                    finalPlaylist.push(item);
-                    finalPlaylist.push(breakItem);
-                });
-            } else {
-                finalPlaylist = [...playlistQueue];
-            }
-
-            const tickerText = document.getElementById('ticker-text').value || 'أهلاً بكم في قناة الأحمدية';
-            const tickerSpeed = parseInt(document.getElementById('ticker-speed').value) || 30;
-            const tickerDirection = document.getElementById('ticker-direction').value || 'ltr';
-
-            set(ref(db, 'channel_status'), {
-                playlist: finalPlaylist,
-                playlistStartTime: Date.now(),
-                tickerText,
-                tickerSpeed,
-                tickerDirection,
-                sideAds: {
-                    right: { show: document.getElementById('ad-right-toggle').checked, url: document.getElementById('ad-right-url').value },
-                    left: { show: document.getElementById('ad-left-toggle').checked, url: document.getElementById('ad-left-url').value }
-                },
-                sponsor: { show: document.getElementById('sponsor-toggle').checked, url: document.getElementById('sponsor-url').value }
-            }).then(() => {
-                const msg = isBreakEnabled ? 'تم بدء البث مع الفواصل التلقائية!' : 'تم بدء البث!';
-                alert(msg);
-            });
-        };
-
-        window.stopBroadcast = () => {
-            if(confirm('إيقاف البث؟')) {
-                remove(ref(db, 'channel_status/playlist'));
-                remove(ref(db, 'channel_status/playlistStartTime'));
-                remove(ref(db, 'channel_status/instantPlay'));
-            }
-        };
-    </script>
 </body>
 </html>
