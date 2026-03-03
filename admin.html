@@ -17,9 +17,9 @@
             --dark: #1a1a2e;
             --darker: #0a0a0a;
         }
-        
+
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        
+
         body {
             font-family: 'Cairo', sans-serif;
             background: linear-gradient(135deg, var(--darker) 0%, var(--dark) 100%);
@@ -36,7 +36,7 @@
             align-items: center;
             z-index: 10000;
         }
-        
+
         .login-box {
             background: rgba(255,255,255,0.05);
             backdrop-filter: blur(10px);
@@ -47,10 +47,10 @@
             max-width: 420px;
             width: 90%;
         }
-        
+
         .login-box h1 { margin-bottom: 10px; font-size: 1.8rem; }
         .login-box .subtitle { opacity: 0.6; margin-bottom: 35px; }
-        
+
         .login-box input {
             width: 100%;
             padding: 18px 25px;
@@ -63,10 +63,10 @@
             margin-bottom: 20px;
             font-family: 'Cairo', sans-serif;
         }
-        
+
         .login-box input::placeholder { color: rgba(255,255,255,0.4); }
         .login-box input:focus { outline: none; background: rgba(255,255,255,0.15); }
-        
+
         .login-box button {
             width: 100%;
             padding: 18px;
@@ -80,7 +80,7 @@
             transition: all 0.3s ease;
             font-family: 'Cairo', sans-serif;
         }
-        
+
         .login-box button:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(192, 57, 43, 0.4); }
         .login-error { color: var(--danger); margin-top: 15px; display: none; }
 
@@ -95,12 +95,12 @@
             top: 0;
             z-index: 100;
         }
-        
+
         .header h1 { font-size: 1.4rem; display: flex; align-items: center; gap: 12px; }
         .header h1 i { color: var(--secondary); }
-        
+
         .header-actions { display: flex; gap: 15px; align-items: center; }
-        
+
         .viewers-badge {
             background: linear-gradient(135deg, var(--success), #219a52);
             padding: 10px 20px;
@@ -111,7 +111,7 @@
             gap: 10px;
             font-weight: bold;
         }
-        
+
         .status-indicator {
             display: flex;
             align-items: center;
@@ -120,14 +120,14 @@
             border-radius: 25px;
             font-size: 0.9rem;
         }
-        
+
         .status-live { background: rgba(39, 174, 96, 0.2); border: 2px solid var(--success); color: var(--success); }
         .status-offline { background: rgba(231, 76, 60, 0.2); border: 2px solid var(--danger); color: var(--danger); }
-        
+
         .status-dot { width: 12px; height: 12px; border-radius: 50%; }
         .status-live .status-dot { background: var(--success); animation: pulse 1.5s infinite; }
         .status-offline .status-dot { background: var(--danger); }
-        
+
         .logout-btn {
             background: transparent;
             border: 2px solid rgba(255,255,255,0.3);
@@ -139,7 +139,7 @@
             font-family: 'Cairo', sans-serif;
             font-weight: 600;
         }
-        
+
         .logout-btn:hover { background: rgba(255,255,255,0.1); border-color: white; }
 
         .main-content { padding: 25px; max-width: 1500px; margin: 0 auto; }
@@ -153,7 +153,7 @@
             padding: 25px;
             margin-bottom: 25px;
         }
-        
+
         .card-header {
             display: flex;
             justify-content: space-between;
@@ -162,7 +162,7 @@
             padding-bottom: 15px;
             border-bottom: 1px solid rgba(255,255,255,0.1);
         }
-        
+
         .card-header h2 { font-size: 1.15rem; display: flex; align-items: center; gap: 10px; }
         .card-header h2 i { color: var(--secondary); }
 
@@ -170,7 +170,7 @@
             background: linear-gradient(135deg, rgba(192, 57, 43, 0.3), rgba(231, 76, 60, 0.2));
             border: 2px solid var(--danger);
         }
-        
+
         .instant-section .card-header h2 { color: var(--danger); }
         .instant-warning {
             background: rgba(0,0,0,0.3);
@@ -186,7 +186,7 @@
 
         .form-group { margin-bottom: 18px; }
         .form-group label { display: block; margin-bottom: 8px; font-size: 0.95rem; opacity: 0.85; }
-        
+
         .form-control {
             width: 100%;
             padding: 14px 18px;
@@ -198,7 +198,7 @@
             font-family: 'Cairo', sans-serif;
             transition: all 0.3s;
         }
-        
+
         .form-control:focus { outline: none; border-color: var(--primary); background: rgba(0,0,0,0.6); }
         .form-control::placeholder { color: rgba(255,255,255,0.35); }
 
@@ -215,22 +215,22 @@
             align-items: center;
             gap: 10px;
         }
-        
+
         .btn-primary { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; }
         .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(192, 57, 43, 0.4); }
-        
+
         .btn-success { background: linear-gradient(135deg, var(--success), #219a52); color: white; }
         .btn-success:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(39, 174, 96, 0.4); }
-        
+
         .btn-warning { background: linear-gradient(135deg, var(--secondary), var(--warning)); color: var(--dark); }
         .btn-danger { background: linear-gradient(135deg, var(--danger), #c0392b); color: white; }
-        
+
         .btn-sm { padding: 10px 18px; font-size: 0.9rem; }
         .btn-block { width: 100%; justify-content: center; }
         .btn-group { display: flex; gap: 12px; margin-top: 15px; }
 
         .playlist-container { max-height: 450px; overflow-y: auto; margin-bottom: 20px; }
-        
+
         .playlist-item {
             background: rgba(0,0,0,0.4);
             padding: 18px;
@@ -243,13 +243,13 @@
             transition: all 0.3s;
             cursor: grab;
         }
-        
+
         .playlist-item:hover { background: rgba(0,0,0,0.6); border-color: rgba(255,255,255,0.15); }
         .playlist-item:active { cursor: grabbing; }
-        
+
         .playlist-item-info h4 { font-size: 1rem; margin-bottom: 8px; }
         .playlist-item-meta { display: flex; gap: 12px; font-size: 0.85rem; opacity: 0.7; }
-        
+
         .badge {
             padding: 5px 12px;
             border-radius: 20px;
@@ -439,7 +439,7 @@
                         </button>
                     </div>
                 </div>
-                
+
                 <!-- القسم الأيسر -->
                 <div>
                     <!-- التحكم في الشريط -->
@@ -457,7 +457,8 @@
                             <span class="slider-value" id="ticker-speed-value">30s</span>
                         </div>
                         <div style="margin-top: 15px;">
-                            <button class="btn btn-warning btn-block" onclick="updateTickerOnly()">
+                            <!-- ✅ التعديل: تمرير this للدالة -->
+                            <button class="btn btn-warning btn-block" onclick="updateTickerOnly(this)">
                                 <i class="fas fa-sync"></i> تحديث الشريط الآن
                             </button>
                         </div>
@@ -584,7 +585,7 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
-        
+
         const ADMIN_PASSWORD = '521988';
         let playlistQueue = [];
 
@@ -605,7 +606,7 @@
             const data = snapshot.val();
             const indicator = document.getElementById('status-indicator');
             const statusText = document.getElementById('status-text');
-            
+
             if(data && data.tickerText) {
                 document.getElementById('ticker-text').value = data.tickerText;
             }
@@ -620,7 +621,7 @@
                 const loops = Math.floor(elapsed / totalDuration);
                 document.getElementById('loop-count').textContent = loops;
             }
-            
+
             if(data && data.playlist && data.playlist.length > 0) {
                 indicator.className = 'status-indicator status-live';
                 statusText.textContent = 'البث جارٍ';
@@ -709,7 +710,7 @@
 
             playlistQueue.push(item);
             renderPlaylist();
-            
+
             document.getElementById('vid-url').value = '';
             document.getElementById('vid-title').value = '';
             document.getElementById('vid-duration').value = '';
@@ -717,7 +718,7 @@
 
         function renderPlaylist() {
             const container = document.getElementById('playlist-container');
-            
+
             if(playlistQueue.length === 0) {
                 container.innerHTML = `<p style="text-align: center; opacity: 0.4; padding: 50px;">
                     <i class="fas fa-inbox" style="font-size: 4rem; margin-bottom: 20px; display: block;"></i>
@@ -782,24 +783,21 @@
             draggedIndex = null;
         };
 
-        // --- الإصلاح النهائي: استخدام String() لضمان عدم وجود undefined ---
-        window.updateTickerOnly = () => {
-            // 1. جلب القيم
-            let textInput = document.getElementById('ticker-text').value;
+        // ✅ الإصلاح: استقبال الزر كـ btnEl بدلاً من event.target
+        window.updateTickerOnly = (btnEl) => {
+            const textInput = document.getElementById('ticker-text').value;
             const speedInput = document.getElementById('ticker-speed').value;
 
-            // 2. تحويل القيم لسلاسل نصية بأمان (حتى لو كانت undefined أو null)
-            const text = String(textInput || "أهلاً بكم في قناة الأحمدية");
+            const text = String(textInput || 'أهلاً بكم في قناة الأحمدية');
             const speed = String(speedInput || 30);
 
-            // 3. التحديث
             const updates = {};
             updates['tickerText'] = text;
             updates['tickerSpeed'] = speed;
 
             update(ref(db, 'channel_status'), updates)
                 .then(() => {
-                    const btn = event.target;
+                    const btn = btnEl; // ✅ مأمون دائماً
                     const originalText = btn.innerHTML;
                     btn.innerHTML = '<i class="fas fa-check"></i> تم التحديث';
                     btn.classList.replace('btn-warning', 'btn-success');
@@ -857,7 +855,7 @@
             const breakVideoUrl = document.getElementById('break-video-url').value;
             const breakVideoDuration = parseInt(document.getElementById('break-video-duration').value) || 30;
             const breakVideoId = getYouTubeId(breakVideoUrl) || breakVideoUrl;
-            
+
             const breakItem = {
                 type: 'youtube',
                 id: breakVideoId,
