@@ -4,7 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>لوحة التحكم | قناة الأحمدية</title>
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 <style>
 body{margin:0;font-family:Cairo;background:#111;color:#fff}
 .container{max-width:1000px;margin:auto;padding:20px}
@@ -22,7 +23,7 @@ h2{margin-top:0;color:#f39c12}
 <div class="section">
 <h2>الشريط الإخباري</h2>
 <input id="tickerText" placeholder="نص الشريط">
-<input type="number" id="tickerSpeed" placeholder="سرعة (بالثواني)" value="30">
+<input type="number" id="tickerSpeed" value="30">
 <select id="tickerDirection">
 <option value="rtl">يمين → يسار</option>
 <option value="ltr">يسار → يمين</option>
@@ -33,22 +34,22 @@ h2{margin-top:0;color:#f39c12}
 <div class="section">
 <h2>الإعلانات الجانبية</h2>
 <label><input type="checkbox" id="adRightShow"> إعلان يمين</label>
-<input id="adRightUrl" placeholder="رابط صورة إعلان يمين">
+<input id="adRightUrl">
 <label><input type="checkbox" id="adLeftShow"> إعلان يسار</label>
-<input id="adLeftUrl" placeholder="رابط صورة إعلان يسار">
+<input id="adLeftUrl">
 <button onclick="updateAds()">حفظ الإعلانات</button>
 </div>
 
 <div class="section">
 <h2>الراعي</h2>
 <label><input type="checkbox" id="sponsorShow"> إظهار الراعي</label>
-<input id="sponsorUrl" placeholder="رابط لوجو الراعي">
+<input id="sponsorUrl">
 <button onclick="updateSponsor()">حفظ الراعي</button>
 </div>
 
 <div class="section">
-<h2>بث فيديو مباشر</h2>
-<input id="videoUrl" placeholder="رابط mp4 أو m3u8">
+<h2>بث مباشر</h2>
+<input id="videoUrl" placeholder="mp4 أو m3u8">
 <button onclick="goLive()">بدء البث</button>
 <button onclick="stopLive()">إيقاف البث</button>
 </div>
@@ -74,39 +75,30 @@ const db=getDatabase(app);
 
 window.updateTicker=()=>{
 update(ref(db,"channel_status"),{
-tickerText:document.getElementById("tickerText").value,
-tickerSpeed:document.getElementById("tickerSpeed").value,
-tickerDirection:document.getElementById("tickerDirection").value
+tickerText:tickerText.value,
+tickerSpeed:tickerSpeed.value,
+tickerDirection:tickerDirection.value
 });
 };
 
 window.updateAds=()=>{
 update(ref(db,"channel_status"),{
 sideAds:{
-right:{
-show:document.getElementById("adRightShow").checked,
-url:document.getElementById("adRightUrl").value
-},
-left:{
-show:document.getElementById("adLeftShow").checked,
-url:document.getElementById("adLeftUrl").value
-}
+right:{show:adRightShow.checked,url:adRightUrl.value},
+left:{show:adLeftShow.checked,url:adLeftUrl.value}
 }
 });
 };
 
 window.updateSponsor=()=>{
 update(ref(db,"channel_status"),{
-sponsor:{
-show:document.getElementById("sponsorShow").checked,
-url:document.getElementById("sponsorUrl").value
-}
+sponsor:{show:sponsorShow.checked,url:sponsorUrl.value}
 });
 };
 
 window.goLive=()=>{
 update(ref(db,"channel_status"),{
-playlist:[{type:"direct",url:document.getElementById("videoUrl").value,duration:999999}],
+playlist:[{type:"direct",url:videoUrl.value,duration:999999}],
 playlistStartTime:Date.now()
 });
 };
