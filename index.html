@@ -1,713 +1,121 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>قناة الأحمدية | بث مباشر</title>
-    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@700&family=Cairo:wght@900&display=swap" rel="stylesheet">
-    
-    <style>
-        :root {
-            --main-color: #c0392b;
-            --secondary-color: #f39c12;
-            --bg-color: #0a0a0a;
-            --ticker-height: 60px;
-        }
-        
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        
-        body, html {
-            width: 100%;
-            height: 100%;
-            background-color: var(--bg-color);
-            font-family: 'Cairo', sans-serif;
-            overflow: hidden;
-        }
-        
-        #tv-container {
-            position: relative;
-            width: 100vw;
-            height: 100vh;
-            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #0a0a0a 100%);
-            overflow: hidden;
-            z-index: 1;
-        }
-
-        .bg-animation {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            pointer-events: none;
-            z-index: 1;
-        }
-        
-        .bg-animation::before {
-            content: '';
-            position: absolute;
-            top: -50%; left: -50%; width: 200%; height: 200%;
-            background: radial-gradient(circle at center, rgba(192, 57, 43, 0.08) 0%, transparent 50%);
-            animation: rotateBg 40s linear infinite;
-        }
-
-        .pro-logo-container {
-            position: absolute;
-            top: 25px; right: 25px;
-            z-index: 200;
-            text-align: center;
-            pointer-events: none;
-            filter: drop-shadow(0 5px 20px rgba(0,0,0,0.9));
-            animation: floatLogo 5s ease-in-out infinite;
-        }
-        
-        .logo-top {
-            display: block;
-            font-family: 'Amiri', serif;
-            font-size: 1rem;
-            color: #fff;
-            text-shadow: 0 0 10px rgba(255,255,255,0.3);
-            letter-spacing: 3px;
-        }
-        
-        .logo-bottom {
-            display: block;
-            font-size: 2.5rem;
-            font-weight: 900;
-            line-height: 1;
-            background: linear-gradient(135deg, #bf953f 0%, #fcf6ba 25%, #b38728 50%, #fbf5b7 75%, #aa771c 100%);
-            -webkit-background-clip: text;
-            color: transparent;
-            background-size: 300% 300%;
-            animation: shine 5s ease-in-out infinite;
-        }
-
-        .viewers-counter {
-            position: absolute;
-            top: 25px; left: 25px;
-            z-index: 200;
-            background: linear-gradient(135deg, rgba(39, 174, 96, 0.9), rgba(39, 174, 96, 0.7));
-            padding: 10px 20px;
-            border-radius: 30px;
-            color: white;
-            font-size: 0.95rem;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            box-shadow: 0 4px 20px rgba(39, 174, 96, 0.4);
-            border: 1px solid rgba(255,255,255,0.2);
-        }
-        
-        .live-dot {
-            width: 10px; height: 10px;
-            background: #fff;
-            border-radius: 50%;
-            animation: pulseLive 1.5s ease-in-out infinite;
-        }
-
-        /* --- الإعلانات والراعي (Fixed خارج الحاوية) --- */
-        .side-ad {
-            position: fixed; /* ثابت بالنسبة للشاشة */
-            top: 20%;
-            transform: translateY(-50%);
-            z-index: 9998; /* طبقة عالية جداً */
-            background: rgba(0,0,0,0.9);
-            border: 2px solid var(--secondary-color);
-            border-radius: 12px;
-            overflow: hidden;
-            display: none; /* مخفي افتراضياً */
-            box-shadow: 0 0 30px rgba(243, 156, 18, 0.4);
-            transition: opacity 0.3s;
-        }
-        
-        .side-ad.right { right: 20px; width: 200px; }
-        .side-ad.left { left: 20px; width: 200px; }
-        
-        .side-ad img { width: 100%; display: block; min-height: 100px; background: #333; object-fit: cover;}
-        .side-ad .ad-label {
-            background: linear-gradient(90deg, var(--secondary-color), #e67e22);
-            color: #000;
-            font-size: 0.7rem;
-            padding: 4px;
-            text-align: center;
-            font-weight: bold;
-        }
-
-        .sponsor-box {
-            position: fixed; /* ثابت بالنسبة للشاشة */
-            top: 25px; left: 130px;
-            z-index: 9998; /* طبقة عالية جداً */
-            background: rgba(255, 255, 255, 0.95);
-            padding: 8px 15px;
-            border-radius: 10px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.5);
-            display: none;
-            text-align: center;
-        }
-        
-        .sponsor-box span { display: block; font-size: 0.65rem; color: #666; margin-bottom: 3px; }
-        .sponsor-box img { max-height: 40px; max-width: 100px; display: block; }
-
-        .player-layer {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            display: none;
-            z-index: 10;
-        }
-        
-        #youtube-player, iframe { width: 100% !important; height: 100% !important; border: none; display: block; }
-        video { width: 100%; height: 100%; object-fit: contain; background: #000; }
-
-        .image-layer {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            display: none;
-            z-index: 10;
-            background-size: contain;
-            background-position: center;
-            background-repeat: no-repeat;
-            background-color: #000;
-        }
-
-        #interaction-blocker {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 50;
-            background: transparent;
-        }
-
-        /* --- الشريط المتحرك (عكس الاتجاه) --- */
-        #news-ticker {
-            position: fixed;
-            bottom: 0; left: 0;
-            width: 100%; height: var(--ticker-height);
-            background: linear-gradient(90deg, #922b21 0%, #c0392b 50%, #922b21 100%);
-            z-index: 99999; /* الأعلى */
-            border-top: 4px solid var(--secondary-color);
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            box-shadow: 0 -5px 20px rgba(0,0,0,0.5);
-        }
-
-        #ticker-track {
-            display: flex;
-            white-space: nowrap;
-            will-change: transform;
-        }
-
-        .ticker-item {
-            padding-left: 50px;
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: white;
-            text-shadow: 2px 2px 0px #000;
-            direction: rtl;
-        }
-
-        #start-overlay {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #0a0a0a 100%);
-            z-index: 100000;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            color: white;
-            cursor: pointer;
-        }
-        
-        .start-logo { transform: scale(2); margin-bottom: 50px; }
-        
-        .play-btn {
-            font-size: 45px;
-            border: 3px solid var(--main-color);
-            border-radius: 50%;
-            width: 110px; height: 110px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            transition: all 0.4s ease;
-            margin-bottom: 25px;
-            background: transparent;
-            color: var(--main-color);
-        }
-        
-        #start-overlay:hover .play-btn {
-            background: var(--main-color);
-            border-color: var(--main-color);
-            color: white;
-            transform: scale(1.1);
-            box-shadow: 0 0 60px rgba(192, 57, 43, 0.6);
-        }
-
-        #offline-screen {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            display: none;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 5;
-            color: white;
-        }
-        
-        .offline-icon { font-size: 100px; margin-bottom: 25px; opacity: 0.4; }
-        .offline-text { font-size: 1.6rem; opacity: 0.6; }
-
-        .now-playing {
-            position: fixed;
-            bottom: 80px;
-            right: 20px;
-            background: rgba(0,0,0,0.85);
-            padding: 12px 25px;
-            border-radius: 10px;
-            color: white;
-            z-index: 9999;
-            font-size: 0.95rem;
-            border-right: 4px solid var(--main-color);
-            display: none;
-            backdrop-filter: blur(5px);
-        }
-
-        @keyframes shine {
-            0%, 100% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-        }
-        @keyframes floatLogo {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
-        }
-        @keyframes rotateBg {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        @keyframes pulseLive {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.6; transform: scale(1.3); }
-        }
-
-        @media (max-width: 768px) {
-            .logo-bottom { font-size: 1.8rem; }
-            .side-ad { display: none !important; }
-            .sponsor-box { display: none !important; }
-            .ticker-item { font-size: 1.1rem; }
-            #news-ticker { height: 45px; }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>لوحة التحكم | قناة الأحمدية</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-family:Cairo;background:#111;color:#fff}
+.container{max-width:1000px;margin:auto;padding:20px}
+input,select,button{padding:10px;margin:5px 0;width:100%;border:none;border-radius:6px}
+button{background:#c0392b;color:#fff;font-weight:bold;cursor:pointer}
+button:hover{opacity:.9}
+.section{background:#1c1c1c;padding:20px;border-radius:10px;margin-bottom:20px}
+h2{margin-top:0;color:#f39c12}
+</style>
 </head>
 <body>
 
-    <div id="start-overlay">
-        <div class="pro-logo-container start-logo">
-            <span class="logo-top">قناة</span>
-            <span class="logo-bottom">الأحمدية</span>
-        </div>
-        <div class="play-btn">▶</div>
-        <p style="opacity: 0.7; font-size: 1.1rem;">اضغط لبدء المشاهدة</p>
-    </div>
+<div class="container">
 
-    <!-- عناصر Fixed للإعلانات (خارج الحاوية) -->
-    <div id="side-ad-right" class="side-ad right">
-        <div class="ad-label">إعلان</div>
-        <img id="side-ad-right-img" src="" alt="Ad">
-    </div>
-    <div id="side-ad-left" class="side-ad left">
-        <div class="ad-label">إعلان</div>
-        <img id="side-ad-left-img" src="" alt="Ad">
-    </div>
-    
-    <div id="sponsor-container" class="sponsor-box">
-        <span>برعاية</span>
-        <img id="sponsor-img" src="" alt="Sponsor">
-    </div>
+<div class="section">
+<h2>الشريط الإخباري</h2>
+<input id="tickerText" placeholder="نص الشريط">
+<input type="number" id="tickerSpeed" placeholder="سرعة (بالثواني)" value="30">
+<select id="tickerDirection">
+<option value="rtl">يمين → يسار</option>
+<option value="ltr">يسار → يمين</option>
+</select>
+<button onclick="updateTicker()">تحديث الشريط</button>
+</div>
 
-    <div id="tv-container">
-        <div class="bg-animation"></div>
-        
-        <div class="pro-logo-container">
-            <span class="logo-top">قناة</span>
-            <span class="logo-bottom">الأحمدية</span>
-        </div>
-        
-        <div class="viewers-counter">
-            <div class="live-dot"></div>
-            <span id="viewers-count">0</span> مشاهد
-        </div>
-        
-        <div id="interaction-blocker"></div>
-        
-        <div id="youtube-player" class="player-layer"></div>
-        <video id="native-player" class="player-layer" playsinline></video>
-        <div id="image-layer" class="image-layer"></div>
-        <audio id="audio-player" style="display:none;"></audio>
-        
-        <div id="offline-screen">
-            <div class="offline-icon">📡</div>
-            <div class="offline-text">في انتظار بدء البث...</div>
-        </div>
-        
-        <div id="now-playing" class="now-playing">
-            <strong>الآن:</strong> <span id="now-title">-</span>
-        </div>
-    </div>
+<div class="section">
+<h2>الإعلانات الجانبية</h2>
+<label><input type="checkbox" id="adRightShow"> إعلان يمين</label>
+<input id="adRightUrl" placeholder="رابط صورة إعلان يمين">
+<label><input type="checkbox" id="adLeftShow"> إعلان يسار</label>
+<input id="adLeftUrl" placeholder="رابط صورة إعلان يسار">
+<button onclick="updateAds()">حفظ الإعلانات</button>
+</div>
 
-    <div id="news-ticker">
-        <div id="ticker-track">
-            <div class="ticker-item">أهلاً بكم في قناة الأحمدية</div>
-            <div class="ticker-item">أهلاً بكم في قناة الأحمدية</div>
-            <div class="ticker-item">أهلاً بكم في قناة الأحمدية</div>
-        </div>
-    </div>
+<div class="section">
+<h2>الراعي</h2>
+<label><input type="checkbox" id="sponsorShow"> إظهار الراعي</label>
+<input id="sponsorUrl" placeholder="رابط لوجو الراعي">
+<button onclick="updateSponsor()">حفظ الراعي</button>
+</div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-        import { getDatabase, ref, onValue, set, onDisconnect, remove } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js";
+<div class="section">
+<h2>بث فيديو مباشر</h2>
+<input id="videoUrl" placeholder="رابط mp4 أو m3u8">
+<button onclick="goLive()">بدء البث</button>
+<button onclick="stopLive()">إيقاف البث</button>
+</div>
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyBxqN1tGzv6bY95FtrbhmUxYucucJ_4veY",
-            authDomain: "ahmdiya-f99f2.firebaseapp.com",
-            databaseURL: "https://ahmdiya-f99f2-default-rtdb.firebaseio.com",
-            projectId: "ahmdiya-f99f2",
-            storageBucket: "ahmdiya-f99f2.firebasestorage.app",
-            messagingSenderId: "831329583457",
-            appId: "1:831329583457:web:acbf686be2c624b4780520",
-            measurementId: "G-73QPC6RXM3"
-        };
+</div>
 
-        const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+import { getDatabase, ref, update, remove } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js";
 
-        let ytPlayer = null;
-        let isStarted = false;
-        let currentData = null;
-        let checkInterval = null;
-        let lastPlayedId = null;
-        let isPlayingInstant = false;
-        let viewerId = 'viewer_' + Math.random().toString(36).substr(2, 9);
+const firebaseConfig={
+apiKey:"AIzaSyBxqN1tGzv6bY95FtrbhmUxYucucJ_4veY",
+authDomain:"ahmdiya-f99f2.firebaseapp.com",
+databaseURL:"https://ahmdiya-f99f2-default-rtdb.firebaseio.com",
+projectId:"ahmdiya-f99f2",
+storageBucket:"ahmdiya-f99f2.appspot.com",
+messagingSenderId:"831329583457",
+appId:"1:831329583457:web:acbf686be2c624b4780520"
+};
 
-        const nativePlayer = document.getElementById('native-player');
-        const audioPlayer = document.getElementById('audio-player');
-        const imageLayer = document.getElementById('image-layer');
-        const ytContainer = document.getElementById('youtube-player');
-        const overlay = document.getElementById('start-overlay');
-        const tickerTrack = document.getElementById('ticker-track');
-        let tickerAnimation = null;
+const app=initializeApp(firebaseConfig);
+const db=getDatabase(app);
 
-        // --- التحكم في الشريط المتحرك (عكس الاتجاه: يسار -> يمين) ---
-        function initTicker(text, speedSeconds) {
-            const items = Array(10).fill(text).join('   ✦   '); 
-            tickerTrack.innerHTML = `<div class="ticker-item">${items}</div>`;
-            
-            const contentWidth = tickerTrack.scrollWidth;
-            const duration = speedSeconds * 1000; 
+window.updateTicker=()=>{
+update(ref(db,"channel_status"),{
+tickerText:document.getElementById("tickerText").value,
+tickerSpeed:document.getElementById("tickerSpeed").value,
+tickerDirection:document.getElementById("tickerDirection").value
+});
+};
 
-            if (tickerAnimation) tickerAnimation.cancel();
+window.updateAds=()=>{
+update(ref(db,"channel_status"),{
+sideAds:{
+right:{
+show:document.getElementById("adRightShow").checked,
+url:document.getElementById("adRightUrl").value
+},
+left:{
+show:document.getElementById("adLeftShow").checked,
+url:document.getElementById("adLeftUrl").value
+}
+}
+});
+};
 
-            // تعديل الحركة لتبدأ من اليسار (-100%) وتنتهي لليمين (100%)
-            tickerAnimation = tickerTrack.animate([
-                { transform: 'translateX(-100%)' }, 
-                { transform: `translateX(100%)` }
-            ], {
-                duration: duration,
-                iterations: Infinity,
-                easing: 'linear'
-            });
-        }
+window.updateSponsor=()=>{
+update(ref(db,"channel_status"),{
+sponsor:{
+show:document.getElementById("sponsorShow").checked,
+url:document.getElementById("sponsorUrl").value
+}
+});
+};
 
-        // --- الاستماع للبيانات ---
-        
-        // 1. الراعي
-        onValue(ref(db, 'channel_status/sponsor'), (snapshot) => {
-            const sponsorBox = document.getElementById('sponsor-container');
-            const img = document.getElementById('sponsor-img');
-            
-            if (snapshot.exists() && snapshot.val().show && snapshot.val().url) {
-                const url = snapshot.val().url;
-                sponsorBox.style.display = 'block';
-                img.src = url;
-            } else {
-                sponsorBox.style.display = 'none';
-            }
-        });
+window.goLive=()=>{
+update(ref(db,"channel_status"),{
+playlist:[{type:"direct",url:document.getElementById("videoUrl").value,duration:999999}],
+playlistStartTime:Date.now()
+});
+};
 
-        // 2. الإعلانات الجانبية
-        onValue(ref(db, 'channel_status/sideAds/right'), (snapshot) => {
-            const ad = document.getElementById('side-ad-right');
-            if (snapshot.exists() && snapshot.val().show && snapshot.val().url) {
-                ad.style.display = 'block';
-                document.getElementById('side-ad-right-img').src = snapshot.val().url;
-            } else {
-                ad.style.display = 'none';
-            }
-        });
+window.stopLive=()=>{
+remove(ref(db,"channel_status/playlist"));
+remove(ref(db,"channel_status/playlistStartTime"));
+};
+</script>
 
-        onValue(ref(db, 'channel_status/sideAds/left'), (snapshot) => {
-            const ad = document.getElementById('side-ad-left');
-            if (snapshot.exists() && snapshot.val().show && snapshot.val().url) {
-                ad.style.display = 'block';
-                document.getElementById('side-ad-left-img').src = snapshot.val().url;
-            } else {
-                ad.style.display = 'none';
-            }
-        });
-
-        // 3. الشريط المتحرك
-        let currentText = "أهلاً بكم في قناة الأحمدية";
-        let currentSpeed = 30;
-
-        onValue(ref(db, 'channel_status/tickerText'), (snapshot) => {
-            if (snapshot.exists()) {
-                currentText = snapshot.val();
-                initTicker(currentText, currentSpeed);
-            }
-        });
-
-        onValue(ref(db, 'channel_status/tickerSpeed'), (snapshot) => {
-            if (snapshot.exists()) {
-                currentSpeed = parseInt(snapshot.val());
-                initTicker(currentText, currentSpeed);
-            }
-        });
-
-        // باقي كود الفيديوهات (بدون تغيير)
-        onValue(ref(db, 'channel_status/playlist'), (snapshot) => {
-            if (!snapshot.exists()) showOffline();
-        });
-        
-        onValue(ref(db, 'channel_status'), (snapshot) => {
-            const data = snapshot.val();
-            if(data) {
-                currentData = data;
-                if(isStarted) handleDataChange(data);
-            } else {
-                showOffline();
-            }
-        });
-
-        function registerViewer() {
-            const viewerRef = ref(db, `viewers/${viewerId}`);
-            set(viewerRef, { joinedAt: Date.now(), page: 'channel' });
-            onDisconnect(viewerRef).remove();
-        }
-
-        onValue(ref(db, 'viewers'), (snapshot) => {
-            const data = snapshot.val();
-            const count = data ? Object.keys(data).filter(k => data[k].page === 'channel').length : 0;
-            document.getElementById('viewers-count').textContent = count;
-        });
-
-        overlay.addEventListener('click', () => {
-            overlay.style.opacity = '0';
-            setTimeout(() => overlay.style.display = 'none', 400);
-            isStarted = true;
-            registerViewer();
-            initTicker(currentText, currentSpeed);
-            if(currentData) handleDataChange(currentData);
-        });
-
-        function showOffline() {
-            document.getElementById('offline-screen').style.display = 'flex';
-            hideAll();
-        }
-
-        function handleDataChange(data) {
-            if(data.instantPlay && data.instantPlay.active) {
-                playInstantContent(data.instantPlay);
-                return;
-            }
-            
-            if(isPlayingInstant) {
-                isPlayingInstant = false;
-                lastPlayedId = null;
-            }
-            
-            if(data.playlist && data.playlist.length > 0) {
-                startScheduler(data);
-            } else {
-                showOffline();
-            }
-        }
-
-        function playInstantContent(instantData) {
-            if(isPlayingInstant && lastPlayedId === instantData.url) return;
-            isPlayingInstant = true;
-            lastPlayedId = instantData.url;
-            document.getElementById('offline-screen').style.display = 'none';
-            hideAll();
-            const platform = instantData.platform;
-            const url = instantData.url;
-            
-            if(platform === 'youtube' || platform === 'shorts') {
-                let videoId = url;
-                if(url.includes('youtube.com') || url.includes('youtu.be')) {
-                    const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/)([^&\?\/]+)/);
-                    if(match) videoId = match[1];
-                }
-                playYouTube(videoId, 0);
-            } else if(platform === 'tiktok') {
-                playTikTok(url);
-            } else if(platform === 'facebook' || platform === 'reels') {
-                playFacebook(url);
-            } else if(platform === 'instagram') {
-                playInstagram(url);
-            } else {
-                playDirect(url, 0);
-            }
-        }
-
-        function startScheduler(data) {
-            if(checkInterval) clearInterval(checkInterval);
-            document.getElementById('offline-screen').style.display = 'none';
-            calculateAndPlay(data);
-            checkInterval = setInterval(() => {
-                if(!isPlayingInstant) {
-                    calculateAndPlay(data);
-                    syncCorrection();
-                }
-            }, 1000);
-        }
-
-        function calculateAndPlay(data) {
-            if(!data.playlist || !data.playlistStartTime) { showOffline(); return; }
-            const now = Date.now();
-            const timeElapsedTotal = (now - data.playlistStartTime) / 1000;
-            let totalDuration = 0;
-            data.playlist.forEach(item => totalDuration += parseInt(item.duration) || 0);
-            if(totalDuration === 0) return;
-            let currentLoopTime = timeElapsedTotal % totalDuration;
-            let timeCursor = 0;
-            let foundVideo = null;
-            let seekTime = 0;
-
-            for (let item of data.playlist) {
-                const itemDuration = parseInt(item.duration) || 0;
-                if (currentLoopTime >= timeCursor && currentLoopTime < (timeCursor + itemDuration)) {
-                    foundVideo = item;
-                    seekTime = currentLoopTime - timeCursor;
-                    break;
-                }
-                timeCursor += itemDuration;
-            }
-            if (foundVideo) playSyncedVideo(foundVideo, seekTime);
-        }
-
-        function syncCorrection() {
-            if(!currentData || !currentData.playlistStartTime) return;
-            const now = Date.now();
-            const timeElapsedTotal = (now - currentData.playlistStartTime) / 1000;
-            const totalDuration = currentData.playlist.reduce((sum, item) => sum + (parseInt(item.duration) || 0), 0);
-            const currentLoopTime = timeElapsedTotal % totalDuration;
-            let timeCursor = 0;
-            let seekTime = 0;
-            for (let item of currentData.playlist) {
-                const itemDuration = parseInt(item.duration) || 0;
-                if (currentLoopTime >= timeCursor && currentLoopTime < (timeCursor + itemDuration)) {
-                    seekTime = currentLoopTime - timeCursor;
-                    break;
-                }
-                timeCursor += itemDuration;
-            }
-            if (nativePlayer.style.display === 'block') {
-                if (Math.abs(nativePlayer.currentTime - seekTime) > 2) nativePlayer.currentTime = seekTime;
-            }
-        }
-
-        function playSyncedVideo(video, seekTime) {
-            const videoKey = video.id || video.url || video.image || JSON.stringify(video);
-            if (lastPlayedId === videoKey && !isPlayingInstant) return; 
-            lastPlayedId = videoKey;
-            document.getElementById('now-playing').style.display = 'block';
-            document.getElementById('now-title').textContent = video.title || 'بدون عنوان';
-            hideAll();
-
-            switch(video.type) {
-                case 'youtube':
-                case 'shorts': playYouTube(video.id, seekTime); break;
-                case 'tiktok': playTikTok(video.url); break;
-                case 'facebook':
-                case 'reels': playFacebook(video.url); break;
-                case 'instagram': playInstagram(video.url); break;
-                case 'direct': playDirect(video.url, seekTime); break;
-                case 'audio-image': playAudioWithImage(video.image, video.audio, seekTime); break;
-                case 'image': showImage(video.image, video.duration); break;
-                default: playDirect(video.url, seekTime);
-            }
-        }
-
-        function hideAll() {
-            ytContainer.style.display = 'none';
-            ytContainer.innerHTML = '';
-            if(ytPlayer && ytPlayer.stopVideo) ytPlayer.stopVideo();
-            nativePlayer.style.display = 'none';
-            nativePlayer.pause();
-            imageLayer.style.display = 'none';
-            audioPlayer.pause();
-        }
-
-        window.onYouTubeIframeAPIReady = function() {
-            ytPlayer = new YT.Player('youtube-player', {
-                height: '100%', width: '100%',
-                playerVars: { 'playsinline': 1, 'controls': 0, 'rel': 0, 'autoplay': 1, 'modestbranding': 1 },
-                events: { 'onReady': () => { if(isStarted && currentData) handleDataChange(currentData); } }
-            });
-        };
-
-        function playYouTube(id, startSeconds) {
-            ytContainer.style.display = 'block';
-            if (ytPlayer && ytPlayer.loadVideoById) {
-                ytPlayer.loadVideoById({ videoId: id, startSeconds: startSeconds });
-                ytPlayer.playVideo();
-            } else {
-                ytContainer.innerHTML = `<iframe src="https://www.youtube.com/embed/${id}?autoplay=1&start=${Math.floor(startSeconds)}&controls=0&rel=0" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;
-            }
-        }
-
-        function playTikTok(url) {
-            ytContainer.style.display = 'block';
-            ytContainer.innerHTML = `<iframe src="${url.replace('tiktok.com', 'tiktok.com/embed')}" width="100%" height="100%" scrolling="no" allow="autoplay; encrypted-media" allowfullscreen style="border:none;"></iframe>`;
-        }
-        function playFacebook(url) {
-            ytContainer.style.display = 'block';
-            let embedUrl = `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(url)}&show_text=0&autoplay=1`;
-            ytContainer.innerHTML = `<iframe src="${embedUrl}" width="100%" height="100%" scrolling="no" frameborder="0" allowfullscreen="true" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"></iframe>`;
-        }
-        function playInstagram(url) {
-            ytContainer.style.display = 'block';
-            ytContainer.innerHTML = `<iframe src="${url}/embed" width="100%" height="100%" scrolling="no" frameborder="0" allowfullscreen="true" allow="autoplay; clipboard-write; encrypted-media;"></iframe>`;
-        }
-        function playDirect(url, startSeconds) {
-            nativePlayer.style.display = 'block';
-            if (Hls.isSupported() && url.includes('.m3u8')) {
-                const hls = new Hls();
-                hls.loadSource(url);
-                hls.attachMedia(nativePlayer);
-                hls.on(Hls.Events.MANIFEST_PARSED, () => {
-                    nativePlayer.currentTime = startSeconds;
-                    nativePlayer.play();
-                });
-            } else {
-                nativePlayer.src = url;
-                nativePlayer.currentTime = startSeconds;
-                nativePlayer.play().catch(e => console.log('Autoplay blocked'));
-            }
-        }
-        function playAudioWithImage(imageUrl, audioUrl, seekTime) {
-            imageLayer.style.display = 'block';
-            imageLayer.style.backgroundImage = `url(${imageUrl})`;
-            audioPlayer.src = audioUrl;
-            audioPlayer.currentTime = seekTime;
-            audioPlayer.play().catch(e => console.log('Audio autoplay blocked'));
-        }
-        function showImage(imageUrl, duration) {
-            imageLayer.style.display = 'block';
-            imageLayer.style.backgroundImage = `url(${imageUrl})`;
-        }
-
-        var tag = document.createElement('script');
-        tag.src = "https://www.youtube.com/iframe_api";
-        var firstScriptTag = document.getElementsByTagName('script')[0];
-        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-    </script>
 </body>
 </html>
