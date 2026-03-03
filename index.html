@@ -23,9 +23,7 @@ video{width:100%;height:100%;object-fit:contain}
 
 <div id="rightAd" class="sideAd"><img id="rightImg" width="100%"></div>
 <div id="leftAd" class="sideAd"><img id="leftImg" width="100%"></div>
-
 <div id="sponsor"><img id="sponsorImg"></div>
-
 <div id="ticker"><div id="tickerText"></div></div>
 
 <script type="module">
@@ -48,40 +46,50 @@ const db=getDatabase(app);
 const player=document.getElementById("player");
 const tickerText=document.getElementById("tickerText");
 
+let lastHash="";
+let tickerInterval=null;
+
 function startTicker(text,speed,dir){
+if(tickerInterval) clearInterval(tickerInterval);
+
 tickerText.innerText=text;
 let start=dir==="rtl"?window.innerWidth:-tickerText.offsetWidth;
 let end=dir==="rtl"?-tickerText.offsetWidth:window.innerWidth;
 tickerText.style.left=start+"px";
-setInterval(()=>{
-start+=dir==="rtl"?-1:1;
+
+tickerInterval=setInterval(()=>{
+start+=dir==="rtl"?-2:2;
 if((dir==="rtl"&&start<=end)||(dir==="ltr"&&start>=end)){
 start=dir==="rtl"?window.innerWidth:-tickerText.offsetWidth;
 }
 tickerText.style.left=start+"px";
-},1000/(speed||30));
+},20);
 }
 
 onValue(ref(db,"channel_status"),snap=>{
 const data=snap.val();
 if(!data) return;
 
-if(data.tickerText) startTicker(data.tickerText,data.tickerSpeed,data.tickerDirection);
+const hash=JSON.stringify(data);
+if(hash===lastHash) return;
+lastHash=hash;
+
+if(data.tickerText) startTicker(data.tickerText,data.tickerSpeed||30,data.tickerDirection||"rtl");
 
 if(data.sideAds?.right?.show){
-document.getElementById("rightAd").style.display="block";
-document.getElementById("rightImg").src=data.sideAds.right.url;
-}else document.getElementById("rightAd").style.display="none";
+rightAd.style.display="block";
+rightImg.src=data.sideAds.right.url;
+}else rightAd.style.display="none";
 
 if(data.sideAds?.left?.show){
-document.getElementById("leftAd").style.display="block";
-document.getElementById("leftImg").src=data.sideAds.left.url;
-}else document.getElementById("leftAd").style.display="none";
+leftAd.style.display="block";
+leftImg.src=data.sideAds.left.url;
+}else leftAd.style.display="none";
 
 if(data.sponsor?.show){
-document.getElementById("sponsor").style.display="block";
-document.getElementById("sponsorImg").src=data.sponsor.url;
-}else document.getElementById("sponsor").style.display="none";
+sponsor.style.display="block";
+sponsorImg.src=data.sponsor.url;
+}else sponsor.style.display="none";
 
 if(data.playlist && data.playlist.length>0){
 let url=data.playlist[0].url;
