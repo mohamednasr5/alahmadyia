@@ -457,7 +457,6 @@
                             <span class="slider-value" id="ticker-speed-value">30s</span>
                         </div>
                         <div style="margin-top: 15px;">
-                            <!-- ✅ التعديل: تمرير this للدالة -->
                             <button class="btn btn-warning btn-block" onclick="updateTickerOnly(this)">
                                 <i class="fas fa-sync"></i> تحديث الشريط الآن
                             </button>
@@ -783,7 +782,7 @@
             draggedIndex = null;
         };
 
-        // ✅ الإصلاح: استقبال الزر كـ btnEl بدلاً من event.target
+        // دالة تحديث الشريط المتحرك
         window.updateTickerOnly = (btnEl) => {
             const textInput = document.getElementById('ticker-text').value;
             const speedInput = document.getElementById('ticker-speed').value;
@@ -797,7 +796,7 @@
 
             update(ref(db, 'channel_status'), updates)
                 .then(() => {
-                    const btn = btnEl; // ✅ مأمون دائماً
+                    const btn = btnEl;
                     const originalText = btn.innerHTML;
                     btn.innerHTML = '<i class="fas fa-check"></i> تم التحديث';
                     btn.classList.replace('btn-warning', 'btn-success');
