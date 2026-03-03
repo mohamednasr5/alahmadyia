@@ -782,20 +782,19 @@
             draggedIndex = null;
         };
 
-        // --- الإصلاح الجديد: الحماية من الأخطاء عند تحديث الشريط ---
+        // --- الإصلاح النهائي: استخدام String() لضمان عدم وجود undefined ---
         window.updateTickerOnly = () => {
             // 1. جلب القيم
-            let text = document.getElementById('ticker-text').value;
-            const speed = parseInt(document.getElementById('ticker-speed').value) || 30;
+            let textInput = document.getElementById('ticker-text').value;
+            const speedInput = document.getElementById('ticker-speed').value;
 
-            // 2. التحقق من النص وإصلاحه
-            if (!text || typeof text !== 'string') {
-                text = "أهلاً بكم في قناة الأحمدية"; // نص افتراضي آمن
-            }
+            // 2. تحويل القيم لسلاسل نصية بأمان (حتى لو كانت undefined أو null)
+            const text = String(textInput || "أهلاً بكم في قناة الأحمدية");
+            const speed = String(speedInput || 30);
 
-            // 3. إرسال البيانات
+            // 3. التحديث
             const updates = {};
-            updates['tickerText'] = text; // نرسل النص الصحيح
+            updates['tickerText'] = text;
             updates['tickerSpeed'] = speed;
 
             update(ref(db, 'channel_status'), updates)
@@ -811,7 +810,7 @@
                 })
                 .catch(err => {
                     console.error(err);
-                    alert('حدث خطأ أثناء الاتصال بالسيرفر: ' + err.message);
+                    alert('حدث خطأ: ' + err.message);
                 });
         };
 
