@@ -237,36 +237,36 @@
             background: transparent;
         }
 
+        /* --- تعديل هام هنا: الشريط المتحرك --- */
         .ticker-wrap {
-            position: absolute;
+            position: absolute; /* وضعه مطلق ليثبت في الأسفل */
             bottom: 0;
             left: 0;
             width: 100%;
             height: 55px;
+            /* خلفية أقوى لضمان قراءة النص */
             background: linear-gradient(90deg, 
-                rgba(192, 57, 43, 0.98) 0%, 
-                rgba(192, 57, 43, 0.95) 50%, 
-                rgba(192, 57, 43, 0.98) 100%);
-            z-index: 100;
-            border-top: 4px solid var(--secondary-color);
+                #a93226 0%, 
+                #c0392b 50%, 
+                #a93226 100%);
+            z-index: 9999; /* رقم عالي ليكون فوق الفيديو والإعلانات */
+            border-top: 3px solid var(--secondary-color);
             overflow: hidden;
             display: flex;
             align-items: center;
-            box-shadow: 0 -5px 30px rgba(0,0,0,0.3);
+            box-shadow: 0 -5px 30px rgba(0,0,0,0.5);
         }
         
         .ticker-content {
             white-space: nowrap;
             padding-right: 100%;
             color: white;
-            font-size: 1.25rem;
+            font-size: 1.4rem; /* تكبير الخط قليلاً للوضوح */
             font-weight: bold;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
-            letter-spacing: 0.5px;
-            /* تمت إزالة الأنيميشن من هنا وستتم إضافتها عبر كلاس .animate */
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+            letter-spacing: 1px;
         }
         
-        /* هذا الكلاس سيتم toggling عليه لإعادة تشغيل الأنيميشن */
         .ticker-content.animate {
             animation: tickerRTL var(--ticker-duration) linear infinite;
         }
@@ -278,7 +278,7 @@
             width: 100%;
             height: 100%;
             background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #0a0a0a 100%);
-            z-index: 9999;
+            z-index: 99999;
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -342,7 +342,7 @@
 
         .now-playing {
             position: absolute;
-            bottom: 70px;
+            bottom: 70px; /* رفعه لأعلى قليلاً لئلا يختفي تحت الشريط */
             right: 20px;
             background: rgba(0,0,0,0.85);
             padding: 12px 25px;
@@ -384,9 +384,10 @@
             .logo-bottom { font-size: 1.8rem; }
             .logo-top { font-size: 0.8rem; }
             .side-ad { display: none !important; }
-            .ticker-content { font-size: 1rem; }
+            .ticker-content { font-size: 1.1rem; }
+            .ticker-wrap { height: 45px; }
             .viewers-counter { font-size: 0.85rem; padding: 8px 15px; }
-            .now-playing { font-size: 0.8rem; padding: 10px 15px; }
+            .now-playing { font-size: 0.8rem; padding: 10px 15px; bottom: 60px; }
         }
     </style>
 </head>
@@ -444,8 +445,8 @@
             <strong>الآن:</strong> <span id="now-title">-</span>
         </div>
         
+        <!-- الشريط المتحرك تم نقله هنا لضمان الترتيب الصحيح، ومع بقاء الستايل مطلقاً سيظهر في الأسفل -->
         <div class="ticker-wrap">
-            <!-- تمت إضافة الكلاس animate مبدئياً -->
             <div class="ticker-content animate" id="ticker-text">أهلاً بكم في قناة الأحمدية</div>
         </div>
     </div>
@@ -486,22 +487,14 @@
 
         // --- دالة مساعدة لإعادة تشغيل الأنيميشن ---
         function updateTicker(newText, newSpeed) {
-            // 1. تحديث النص والسرعة في CSS Variables
             if (newText) tickerEl.innerText = newText;
             if (newSpeed) root.style.setProperty('--ticker-duration', newSpeed + 's');
 
-            // 2. إيقاف الأنيميشن مؤقتاً بإزالة الكلاس
             tickerEl.classList.remove('animate');
-
-            // 3. إجبار المتصفح على إعادة رسم الصفحة (Reflow)
-            // هذه الخطوة ضرورية لكي يفهم المتصفح أن الأنيميشن توقفت ويمكنه بدء دورة جديدة
             void tickerEl.offsetWidth; 
-
-            // 4. إعادة تشغيل الأنيميشن
             tickerEl.classList.add('animate');
         }
 
-        // --- استماع خاص للإعلانات والراعي (لتحديث فوري) ---
         onValue(ref(db, 'channel_status/sponsor'), (snapshot) => {
             const data = snapshot.val();
             const sponsorBox = document.getElementById('sponsor-container');
@@ -533,8 +526,6 @@
             }
         });
 
-        // --- استماع خاص للشريط الإخباري ---
-        // نخزن القيم الحالية لضمان عدم عمل ريستارت غير ضروري إذا لم تتغير القيم
         let currentTickerText = "أهلاً بكم في قناة الأحمدية";
         let currentTickerSpeed = 30;
 
@@ -548,7 +539,6 @@
 
         onValue(ref(db, 'channel_status/tickerSpeed'), (snapshot) => {
             const speed = snapshot.val();
-            // تأكد من أن السرعة رقم ولديها قيمة منطقية
             const speedNum = parseInt(speed);
             if (speedNum && speedNum !== currentTickerSpeed) {
                 currentTickerSpeed = speedNum;
@@ -556,7 +546,6 @@
             }
         });
 
-        // --- الاستماع العام للبث ---
         onValue(ref(db, 'channel_status/playlist'), (snapshot) => {
             if (!snapshot.exists()) {
                 showOffline();
