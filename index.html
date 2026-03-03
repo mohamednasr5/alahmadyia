@@ -35,10 +35,7 @@
 
         .bg-animation {
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            top: 0; left: 0; width: 100%; height: 100%;
             pointer-events: none;
             z-index: 1;
         }
@@ -46,31 +43,15 @@
         .bg-animation::before {
             content: '';
             position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
+            top: -50%; left: -50%; width: 200%; height: 200%;
             background: radial-gradient(circle at center, rgba(192, 57, 43, 0.08) 0%, transparent 50%);
             animation: rotateBg 40s linear infinite;
-        }
-        
-        .bg-animation::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: 
-                radial-gradient(circle at 20% 80%, rgba(243, 156, 18, 0.05) 0%, transparent 40%),
-                radial-gradient(circle at 80% 20%, rgba(192, 57, 43, 0.05) 0%, transparent 40%);
         }
 
         .pro-logo-container {
             position: absolute;
-            top: 25px;
-            right: 25px;
-            z-index: 200;
+            top: 25px; right: 25px;
+            z-index: 200; /* أقل من الإعلانات */
             text-align: center;
             pointer-events: none;
             filter: drop-shadow(0 5px 20px rgba(0,0,0,0.9));
@@ -100,8 +81,7 @@
 
         .viewers-counter {
             position: absolute;
-            top: 25px;
-            left: 25px;
+            top: 25px; left: 25px;
             z-index: 200;
             background: linear-gradient(135deg, rgba(39, 174, 96, 0.9), rgba(39, 174, 96, 0.7));
             padding: 10px 20px;
@@ -117,62 +97,58 @@
         }
         
         .live-dot {
-            width: 10px;
-            height: 10px;
+            width: 10px; height: 10px;
             background: #fff;
             border-radius: 50%;
             animation: pulseLive 1.5s ease-in-out infinite;
         }
 
+        /* --- تعديل طبقات الإعلانات --- */
         .side-ad {
             position: absolute;
-            top: 50%;
+            top: 20%; /* رفعها للأعلى قليلاً */
             transform: translateY(-50%);
-            z-index: 150;
-            background: rgba(0,0,0,0.85);
+            z-index: 9998; /* طبقة عالية جداً، فوق الفيديو لكن تحت الشريط */
+            background: rgba(0,0,0,0.9);
             border: 2px solid var(--secondary-color);
             border-radius: 12px;
             overflow: hidden;
             display: none;
-            box-shadow: 0 0 40px rgba(243, 156, 18, 0.3);
-            transition: all 0.5s ease;
+            box-shadow: 0 0 30px rgba(243, 156, 18, 0.4);
+            transition: all 0.3s ease;
         }
         
-        .side-ad.right { right: 15px; width: 200px; }
-        .side-ad.left { left: 15px; width: 200px; }
+        .side-ad.right { right: 20px; width: 200px; }
+        .side-ad.left { left: 20px; width: 200px; }
         
         .side-ad img { width: 100%; display: block; }
         .side-ad .ad-label {
             background: linear-gradient(90deg, var(--secondary-color), #e67e22);
             color: #000;
-            font-size: 0.75rem;
-            padding: 5px;
+            font-size: 0.7rem;
+            padding: 4px;
             text-align: center;
             font-weight: bold;
         }
 
         .sponsor-box {
             position: absolute;
-            top: 85px;
-            left: 25px;
-            z-index: 200;
+            top: 25px; left: 130px; /* بجانب العداد */
+            z-index: 9998; /* طبقة عالية جداً */
             background: rgba(255, 255, 255, 0.95);
-            padding: 10px 18px;
-            border-radius: 12px;
-            box-shadow: 0 5px 30px rgba(0,0,0,0.5);
+            padding: 8px 15px;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.5);
             display: none;
             text-align: center;
         }
         
-        .sponsor-box span { display: block; font-size: 0.75rem; color: #666; margin-bottom: 5px; }
-        .sponsor-box img { max-height: 55px; max-width: 130px; display: block; }
+        .sponsor-box span { display: block; font-size: 0.65rem; color: #666; margin-bottom: 3px; }
+        .sponsor-box img { max-height: 40px; max-width: 100px; display: block; }
 
         .player-layer {
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            top: 0; left: 0; width: 100%; height: 100%;
             display: none;
             z-index: 10;
         }
@@ -182,10 +158,7 @@
 
         .image-layer {
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            top: 0; left: 0; width: 100%; height: 100%;
             display: none;
             z-index: 10;
             background-size: contain;
@@ -196,23 +169,18 @@
 
         #interaction-blocker {
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 90%;
-            z-index: 50;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 50; /* أقل من الإعلانات */
             background: transparent;
         }
 
-        /* --- الشريط المتحرك الجديد --- */
+        /* --- الشريط المتحرك الأعلى --- */
         #news-ticker {
-            position: fixed; /* Fixed لضمان ثباته */
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: var(--ticker-height);
+            position: fixed;
+            bottom: 0; left: 0;
+            width: 100%; height: var(--ticker-height);
             background: linear-gradient(90deg, #922b21 0%, #c0392b 50%, #922b21 100%);
-            z-index: 99999;
+            z-index: 99999; /* الأعلى فوق كل شيء */
             border-top: 4px solid var(--secondary-color);
             overflow: hidden;
             display: flex;
@@ -224,11 +192,10 @@
             display: flex;
             white-space: nowrap;
             will-change: transform;
-            /* سيتم تحريكه بواسطة JavaScript */
         }
 
         .ticker-item {
-            padding-left: 50px; /* مسافة بين النصوص المتكررة */
+            padding-left: 50px;
             font-size: 1.5rem;
             font-weight: 700;
             color: white;
@@ -238,8 +205,7 @@
 
         #start-overlay {
             position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
+            top: 0; left: 0; width: 100%; height: 100%;
             background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #0a0a0a 100%);
             z-index: 100000;
             display: flex;
@@ -276,8 +242,7 @@
 
         #offline-screen {
             position: absolute;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
+            top: 0; left: 0; width: 100%; height: 100%;
             display: none;
             flex-direction: column;
             justify-content: center;
@@ -291,13 +256,13 @@
 
         .now-playing {
             position: absolute;
-            bottom: 80px; /* فوق الشريط الجديد */
+            bottom: 80px;
             right: 20px;
             background: rgba(0,0,0,0.85);
             padding: 12px 25px;
             border-radius: 10px;
             color: white;
-            z-index: 120;
+            z-index: 9999; /* فوق الإعلانات */
             font-size: 0.95rem;
             border-right: 4px solid var(--main-color);
             display: none;
@@ -325,6 +290,7 @@
             .logo-bottom { font-size: 1.8rem; }
             .logo-top { font-size: 0.8rem; }
             .side-ad { display: none !important; }
+            .sponsor-box { display: none !important; }
             .ticker-item { font-size: 1.1rem; }
             #news-ticker { height: 45px; }
             .viewers-counter { font-size: 0.85rem; padding: 8px 15px; }
@@ -387,7 +353,6 @@
         </div>
     </div>
 
-    <!-- الشريط المتحرك الجديد خارج الحاوية لضمان عدم تداخل الطبقات -->
     <div id="news-ticker">
         <div id="ticker-track">
             <div class="ticker-item">أهلاً بكم في قناة الأحمدية</div>
@@ -427,30 +392,22 @@
         const imageLayer = document.getElementById('image-layer');
         const ytContainer = document.getElementById('youtube-player');
         const overlay = document.getElementById('start-overlay');
-
-        // --- التحكم الجديد في الشريط المتحرك ---
         const tickerTrack = document.getElementById('ticker-track');
         let tickerAnimation = null;
-        let currentText = "أهلاً بكم في قناة الأحمدية";
 
+        // --- التحكم في الشريط المتحرك ---
         function initTicker(text, speedSeconds) {
-            // نحتاج لتكرار النص لملء الشاشة وخلق حركة مستمرة
-            // بما أننا في اتجاه RTL، سنقوم بتكرار العناصر
             const items = Array(10).fill(text).join('   ✦   '); 
-            
-            // بناء HTML الشريط
             tickerTrack.innerHTML = `<div class="ticker-item">${items}</div>`;
             
             const contentWidth = tickerTrack.scrollWidth;
-            const duration = speedSeconds * 1000; // تحويل لمللي ثانية
+            const duration = speedSeconds * 1000; 
 
-            // إلغاء أي أنيميشن سابقة
             if (tickerAnimation) tickerAnimation.cancel();
 
-            // استخدام Web Animations API لتحريك المحتوى من اليمين لليسار
             tickerAnimation = tickerTrack.animate([
-                { transform: 'translateX(100%)' }, // البداية: خارج الشاشة من اليمين
-                { transform: `translateX(-${contentWidth}px)` } // النهاية: خارج الشاشة من اليسار
+                { transform: 'translateX(100%)' },
+                { transform: `translateX(-${contentWidth}px)` }
             ], {
                 duration: duration,
                 iterations: Infinity,
@@ -458,64 +415,65 @@
             });
         }
 
-        // --- استماع للبيانات ---
+        // --- الاستماع للبيانات (تحديث فوري) ---
+        
+        // 1. الراعي
         onValue(ref(db, 'channel_status/sponsor'), (snapshot) => {
-            const data = snapshot.val();
             const sponsorBox = document.getElementById('sponsor-container');
-            if(data && data.show && data.url) {
+            const img = document.getElementById('sponsor-img');
+            
+            if (snapshot.exists() && snapshot.val().show && snapshot.val().url) {
+                const url = snapshot.val().url;
                 sponsorBox.style.display = 'block';
-                document.getElementById('sponsor-img').src = data.url;
+                img.src = url; // تحديث فوري
             } else {
                 sponsorBox.style.display = 'none';
+                img.src = ''; // تنظيف
             }
         });
 
-        onValue(ref(db, 'channel_status/sideAds'), (snapshot) => {
-            const ads = snapshot.val();
-            const rightAd = document.getElementById('side-ad-right');
-            const leftAd = document.getElementById('side-ad-left');
-            
-            if(ads && ads.right && ads.right.show) {
-                rightAd.style.display = 'block';
-                document.getElementById('side-ad-right-img').src = ads.right.url;
+        // 2. الإعلانات الجانبية (تحديث فردي لكل إعلان)
+        onValue(ref(db, 'channel_status/sideAds/right'), (snapshot) => {
+            const ad = document.getElementById('side-ad-right');
+            if (snapshot.exists() && snapshot.val().show && snapshot.val().url) {
+                ad.style.display = 'block';
+                document.getElementById('side-ad-right-img').src = snapshot.val().url;
             } else {
-                rightAd.style.display = 'none';
-            }
-            
-            if(ads && ads.left && ads.left.show) {
-                leftAd.style.display = 'block';
-                document.getElementById('side-ad-left-img').src = ads.left.url;
-            } else {
-                leftAd.style.display = 'none';
+                ad.style.display = 'none';
             }
         });
 
+        onValue(ref(db, 'channel_status/sideAds/left'), (snapshot) => {
+            const ad = document.getElementById('side-ad-left');
+            if (snapshot.exists() && snapshot.val().show && snapshot.val().url) {
+                ad.style.display = 'block';
+                document.getElementById('side-ad-left-img').src = snapshot.val().url;
+            } else {
+                ad.style.display = 'none';
+            }
+        });
+
+        // 3. الشريط المتحرك
+        let currentText = "أهلاً بكم في قناة الأحمدية";
+        let currentSpeed = 30;
+
+        // الاستماع للنص
         onValue(ref(db, 'channel_status/tickerText'), (snapshot) => {
-            const text = snapshot.val();
-            if (text) {
-                currentText = text;
-                // نجلب السرعة الحالية أو الافتراضية
-                const currentSpeed = document.getElementById('ticker-speed-display')?.dataset.speed || 30;
-                initTicker(currentText, parseInt(currentSpeed));
+            if (snapshot.exists()) {
+                currentText = snapshot.val();
+                initTicker(currentText, currentSpeed);
             }
         });
 
+        // الاستماع للسرعة
         onValue(ref(db, 'channel_status/tickerSpeed'), (snapshot) => {
-            const speed = snapshot.val();
-            if (speed) {
-                // نخزن السرعة في عنصر مخفي للاستخدام عند تغيير النص
-                let speedDisplay = document.getElementById('ticker-speed-display');
-                if(!speedDisplay) {
-                    speedDisplay = document.createElement('div');
-                    speedDisplay.id = 'ticker-speed-display';
-                    speedDisplay.style.display = 'none';
-                    document.body.appendChild(speedDisplay);
-                }
-                speedDisplay.dataset.speed = speed;
-                initTicker(currentText, parseInt(speed));
+            if (snapshot.exists()) {
+                currentSpeed = parseInt(snapshot.val());
+                initTicker(currentText, currentSpeed);
             }
         });
 
+        // الباقي من الكود السابق (الفيديوهات والجدولة)
         onValue(ref(db, 'channel_status/playlist'), (snapshot) => {
             if (!snapshot.exists()) showOffline();
         });
@@ -532,10 +490,7 @@
 
         function registerViewer() {
             const viewerRef = ref(db, `viewers/${viewerId}`);
-            set(viewerRef, {
-                joinedAt: Date.now(),
-                page: 'channel'
-            });
+            set(viewerRef, { joinedAt: Date.now(), page: 'channel' });
             onDisconnect(viewerRef).remove();
         }
 
@@ -550,8 +505,7 @@
             setTimeout(() => overlay.style.display = 'none', 400);
             isStarted = true;
             registerViewer();
-            // بدء الشريط بالقيم الافتراضية إذا لم تكن هناك بيانات
-            initTicker(currentText, 30);
+            initTicker(currentText, currentSpeed);
             if(currentData) handleDataChange(currentData);
         });
 
