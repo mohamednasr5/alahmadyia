@@ -258,12 +258,17 @@
         .ticker-content {
             white-space: nowrap;
             padding-right: 100%;
-            animation: tickerRTL var(--ticker-duration) linear infinite;
             color: white;
             font-size: 1.25rem;
             font-weight: bold;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
             letter-spacing: 0.5px;
+            /* تمت إزالة الأنيميشن من هنا وستتم إضافتها عبر كلاس .animate */
+        }
+        
+        /* هذا الكلاس سيتم toggling عليه لإعادة تشغيل الأنيميشن */
+        .ticker-content.animate {
+            animation: tickerRTL var(--ticker-duration) linear infinite;
         }
 
         #start-overlay {
@@ -440,7 +445,8 @@
         </div>
         
         <div class="ticker-wrap">
-            <div class="ticker-content" id="ticker-text">أهلاً بكم في قناة الأحمدية</div>
+            <!-- تمت إضافة الكلاس animate مبدئياً -->
+            <div class="ticker-content animate" id="ticker-text">أهلاً بكم في قناة الأحمدية</div>
         </div>
     </div>
 
@@ -478,6 +484,23 @@
         const overlay = document.getElementById('start-overlay');
         const root = document.documentElement;
 
+        // --- دالة مساعدة لإعادة تشغيل الأنيميشن ---
+        function updateTicker(newText, newSpeed) {
+            // 1. تحديث النص والسرعة في CSS Variables
+            if (newText) tickerEl.innerText = newText;
+            if (newSpeed) root.style.setProperty('--ticker-duration', newSpeed + 's');
+
+            // 2. إيقاف الأنيميشن مؤقتاً بإزالة الكلاس
+            tickerEl.classList.remove('animate');
+
+            // 3. إجبار المتصفح على إعادة رسم الصفحة (Reflow)
+            // هذه الخطوة ضرورية لكي يفهم المتصفح أن الأنيميشن توقفت ويمكنه بدء دورة جديدة
+            void tickerEl.offsetWidth; 
+
+            // 4. إعادة تشغيل الأنيميشن
+            tickerEl.classList.add('animate');
+        }
+
         // --- استماع خاص للإعلانات والراعي (لتحديث فوري) ---
         onValue(ref(db, 'channel_status/sponsor'), (snapshot) => {
             const data = snapshot.val();
@@ -510,30 +533,36 @@
             }
         });
 
-        // --- استماع خاص للشريط الإخباري (لتحديث فوري) ---
+        // --- استماع خاص للشريط الإخباري ---
+        // نخزن القيم الحالية لضمان عدم عمل ريستارت غير ضروري إذا لم تتغير القيم
+        let currentTickerText = "أهلاً بكم في قناة الأحمدية";
+        let currentTickerSpeed = 30;
+
         onValue(ref(db, 'channel_status/tickerText'), (snapshot) => {
             const text = snapshot.val();
-            if (text) {
-                tickerEl.innerText = text;
+            if (text && text !== currentTickerText) {
+                currentTickerText = text;
+                updateTicker(currentTickerText, currentTickerSpeed);
             }
         });
 
         onValue(ref(db, 'channel_status/tickerSpeed'), (snapshot) => {
             const speed = snapshot.val();
-            if (speed) {
-                root.style.setProperty('--ticker-duration', speed + 's');
+            // تأكد من أن السرعة رقم ولديها قيمة منطقية
+            const speedNum = parseInt(speed);
+            if (speedNum && speedNum !== currentTickerSpeed) {
+                currentTickerSpeed = speedNum;
+                updateTicker(currentTickerText, currentTickerSpeed);
             }
         });
 
         // --- الاستماع العام للبث ---
         onValue(ref(db, 'channel_status/playlist'), (snapshot) => {
-            // هذا الجزء يتعامل فقط مع القائمة وليس بالتعديل على الإعلانات
             if (!snapshot.exists()) {
                 showOffline();
             }
         });
         
-        // نستمع للتغييرات الكاملة لتحديث المتغيرات العامة فقط
         onValue(ref(db, 'channel_status'), (snapshot) => {
             const data = snapshot.val();
             if(data) {
