@@ -782,18 +782,20 @@
             draggedIndex = null;
         };
 
-        // --- تحديث آمن للشريط الإخباري ---
+        // --- الإصلاح الجديد: الحماية من الأخطاء عند تحديث الشريط ---
         window.updateTickerOnly = () => {
-            const text = document.getElementById('ticker-text').value;
+            // 1. جلب القيم
+            let text = document.getElementById('ticker-text').value;
             const speed = parseInt(document.getElementById('ticker-speed').value) || 30;
 
-            // تحقق من أن النص ليس فارغاً لتجنب الأخطاء
-            if (!text && text !== "") {
-                 // إسمح بالنص الفارغي إذا كان ذلك مقصوداً، ولكن تأكد من أنه string
+            // 2. التحقق من النص وإصلاحه
+            if (!text || typeof text !== 'string') {
+                text = "أهلاً بكم في قناة الأحمدية"; // نص افتراضي آمن
             }
 
+            // 3. إرسال البيانات
             const updates = {};
-            updates['tickerText'] = text;
+            updates['tickerText'] = text; // نرسل النص الصحيح
             updates['tickerSpeed'] = speed;
 
             update(ref(db, 'channel_status'), updates)
@@ -809,7 +811,7 @@
                 })
                 .catch(err => {
                     console.error(err);
-                    alert('حدث خطأ أثناء التحديث');
+                    alert('حدث خطأ أثناء الاتصال بالسيرفر: ' + err.message);
                 });
         };
 
